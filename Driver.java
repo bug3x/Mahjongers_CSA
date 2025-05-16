@@ -1,4 +1,4 @@
-public class Main {
+public class Driver {
     public static void main(String[] args) {
         // Create objects
         // ClassName obj = new ClassName();
