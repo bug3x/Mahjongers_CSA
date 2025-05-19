@@ -1,39 +1,25 @@
+package src;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 public class GameLogic {
-
-	// pong method, called by player (ex. player1.pong()) once given a potential set of 3
-	// will add a piece to that player
-	// utilize helper method to display new set on the board
-	public Piece[] pong() {
-		Piece[] set3 = new Piece[3];
-		System.out.println("pong!");
-		return set3;
-	}
+	// private List<Player> players;
+	private Board board;
+	private Stack<Piece> wall;
 	
-	// same as pong, but only to take from the previous player's discard
-	public Piece[] chow() {
-		Piece[] set3 = new Piece[3];
-		System.out.println("chow!");
-		return set3;
-	}
-	
-	// similar to pong and chow but to create a set of 4
-	public Piece[] kong() {
-		Piece[] set4 = new Piece[4];
-		System.out.println("kong!");
-		return set4;
-	}
-	
-	// a method to declare riichi, returns nothing.
-	public void riichi() {
-		System.out.println("RICHI!!!");
-		return;
-	}
+	private int currentPlayerIndex;
+	private boolean yaku;
+	private boolean win;
+	private boolean pongable, chowable, kongable;
+	private boolean riichi;
 	
 	public void noYaku() {
 		System.out.println("NO Yaku.");
 	}
 	
+	// calculate points for each, both addition and deduction
 	public int calcPoints() {
 		return -1;
 	}
