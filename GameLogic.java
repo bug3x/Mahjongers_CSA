@@ -34,6 +34,7 @@ public class GameLogic {
 		System.out.println("NO Yaku.");
 	}
 	
+	//different points for the conditions
 	public int calcPoints() {
 		return -1;
 	}
