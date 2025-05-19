@@ -7,7 +7,7 @@ public class Piece {
         // obj.someMethod();
 
         // Print output
-        System.out.println("Leonard Stinks");
+        System.out.println("I fucking hate Nathan and Brandon some fucking chinks ");
 
         // You can add more logic here to test your classes
     }
