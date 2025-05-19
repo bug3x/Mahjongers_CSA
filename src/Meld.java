@@ -4,28 +4,28 @@ public class Meld {
 	// pong method, called by player (ex. player1.pong()) once given a potential set of 3
 	// will add a piece to that player
 	// utilize helper method to display new set on the board
-	public Piece[] pong() {
+	public Piece[] callPong() {
 		Piece[] set3 = new Piece[3];
 		System.out.println("pong!");
 		return set3;
 	}
 	
 	// same as pong, but only to take from the previous player's discard
-	public Piece[] chow() {
+	public Piece[] callChow() {
 		Piece[] set3 = new Piece[3];
 		System.out.println("chow!");
 		return set3;
 	}
 	
 	// similar to pong and chow but to create a set of 4
-	public Piece[] kong() {
+	public Piece[] callKong() {
 		Piece[] set4 = new Piece[4];
 		System.out.println("kong!");
 		return set4;
 	}
 	
 	// a method to declare riichi, returns nothing.
-	public void riichi() {
+	public void callRichi() {
 		System.out.println("RICHI!!!");
 		return;
 	}

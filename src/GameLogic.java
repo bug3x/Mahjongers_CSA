@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Stack;
 
 public class GameLogic {
-	private List<Player> players;
+	// private List<Player> players;
 	private Board board;
 	private Stack<Piece> wall;
 	
 	private int currentPlayerIndex;
 	private boolean yaku;
 	private boolean win;
+	private boolean pongable, chowable, kongable;
+	private boolean riichi;
 	
 	public void noYaku() {
 		System.out.println("NO Yaku.");
