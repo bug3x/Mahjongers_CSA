@@ -8,7 +8,10 @@ public class GameLogic {
 	// private List<Player> players;
 //	private Board board;
 	private Tile[][] board;
-	private Stack<Piece> wall; // the walls to take pieces from
+	
+	private List<Player> players;
+	private List<Piece> deadWall;
+	private Stack<Piece> drawWall; // the walls to take pieces from
 	
 	private int currentPlayerIndex;
 	private boolean yaku;
@@ -28,17 +31,16 @@ public class GameLogic {
 		setupWalls();
 		
 		//setup other pieces
-		setupPieces(null);
-		setupPieces(null);
+		setupPlayers(players);
 	}
 	
-	public void setupPieces(Piece type) {		
-		//randomize
-		
-
-		//hands
-		
-	
+	public void setupPlayers(List<Player> players) {
+	    this.players = players;
+	    for (Player p : players) {
+	        for (int i = 0; i < 13; i++) {
+	            p.addToHand(wall.pop()); // you wanna randomize the wall with the 144 tiles
+	        }
+	    }
 	}
 	
 	public void setupWalls() {
