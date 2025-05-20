@@ -1,4 +1,5 @@
-public class Driver {
+package src;
+public class Piece {
     public static void main(String[] args) {
         // Create objects
         // ClassName obj = new ClassName();
@@ -7,7 +8,7 @@ public class Driver {
         // obj.someMethod();
 
         // Print output
-        System.out.println("Program started.");
+        System.out.println("Leonard Stinks");
 
         // You can add more logic here to test your classes
     }
