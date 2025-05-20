@@ -1,5 +1,7 @@
 package src;
 
+import java.util.ArrayList;
+
 public class Meld {
 	// pong method, called by player (ex. player1.pong()) once given a potential set of 3
 	// will add a piece to that player
@@ -25,14 +27,50 @@ public class Meld {
 	}
 	
 	// a method to declare riichi, returns nothing.
-	public void callRichi() {
-		System.out.println("RICHI!!!");
+	public void callRiichi() {
+		System.out.println("RIICHI!!!");
 		return;
 	}
 	
+	// highlight the pong button
+	public static boolean pongable(ArrayList<Player> player) {
+		Player play = new Player();
+		for(int i = 0; i < player.size(); i++) {
+			play = player.get(i);
+			for(int j = 0; j < play.hand.size(); j++) {
+				// fill in;
+			}
+		}
+		return true;
+	}
+	
+	//highlight the chow button
+	public static boolean chowable() {
+		 
+		return true;
+	}
+	
+	//highlight the kong button
+	public static boolean kongable() {
+		 return true;
+	}
+	
+	//highlight the riichi button
+	public static boolean riichi() {
+		 return true;
+	}
+	
+	// checking each meld boolean
+	public static void checkMelds() {
+		pongable();
+		chowable();
+		kongable();
+		riichi();
+	}
+	
+	// each new round, check the melds for each player
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
 	}
 
 }

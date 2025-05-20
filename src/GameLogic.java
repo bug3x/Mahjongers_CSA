@@ -7,13 +7,13 @@ import java.util.Stack;
 public class GameLogic {
 	// private List<Player> players;
 	private Board board;
-	private Stack<Piece> wall;
+	private Stack<Piece> wall; // the walls to take pieces from
 	
 	private int currentPlayerIndex;
 	private boolean yaku;
 	private boolean win;
-	private boolean pongable, chowable, kongable;
-	private boolean riichi;
+//	private boolean pongable, chowable, kongable;
+//	private boolean riichi;
 	
 	public void noYaku() {
 		System.out.println("NO Yaku.");
