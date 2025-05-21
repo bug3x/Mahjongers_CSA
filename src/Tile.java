@@ -19,10 +19,12 @@ public class Tile extends JButton{
 	}
 	
 	public Tile(int r, int c) {
-		this.row = r;
-		this.col = c;
-
+	    this.row = r;
+	    this.col = c;
+	    this.setBackground(Color.LIGHT_GRAY); // if we want to have colored tile placements for a visual cue to piece placement
+	    this.setFocusPainted(false);
 	}
+
 
 	public int getRow() {
 		return row;
@@ -32,20 +34,32 @@ public class Tile extends JButton{
 		return col;
 	}
 
-//	public void setPiece(Piece piece) {
-//		if(piece==null) {
-//			this.piece = null;
-//			this.setIcon(null);
-//			return;
-//		}
-//		this.piece = piece;
-//		this.setIcon(piece.getIcon());
-//		piece.setLocation(row, col);
-//	}
+	public void removePiece() {
+	    this.piece = null;
+	    this.setIcon(null);
+	}
+
+	public void setPiece(Piece piece) {
+	    this.piece = piece;
 	
+	    if (piece == null) {
+	        this.setIcon(null);
+	    } else {
+	        this.setIcon(piece.getIcon());
+	        piece.setLocation(row, col);  // Optional: useful if pieces need to track their position
+	    }
+	}
 	
 	public Piece getPiece() {
 		return piece;
 	}
-	
+
+	public boolean hasPiece() {
+    		return piece != null;
+	}
+
+	@Override
+	public String toString() {
+    		return "Tile[" + row + "," + col + "] - " + (piece == null ? "empty" : piece.toString());
+	}
 }
