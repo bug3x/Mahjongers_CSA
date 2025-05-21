@@ -9,9 +9,9 @@ public class GameLogic {
 //	private Board board;
 	private Tile[][] board;
 	
-	private List<Player> players;
 	private List<Piece> deadWall;
 	private Stack<Piece> drawWall; // the walls to take pieces from
+	public static List<Player> players;
 	
 	private int currentPlayerIndex;
 	private boolean yaku;
@@ -19,20 +19,20 @@ public class GameLogic {
 //	private boolean pongable, chowable, kongable;
 //	private boolean riichi;
 	
-	public GameLogic() {
-		board = new Tile[8][8];
-		
-		for(int i =0; i < board.length;i++) {
-			for(int j = 0; j < board[0].length;j++) {
-				board[i][j] = new Tile(i, j);
-			}
-		}	
-		
-		setupWalls();
-		
-		//setup other pieces
-		setupPlayers(players);
+	public GameLogic(List<Player> players) {
+	    board = new Tile[8][8];
+	    this.players = players;
+
+	    for (int i = 0; i < board.length; i++) {
+	        for (int j = 0; j < board[0].length; j++) {
+	            board[i][j] = new Tile(i, j);
+	        }
+	    }
+
+	    setupWalls(players);
+	    // Remove setupPlayers from here — do it *after* adding players
 	}
+
 	
 	public void setupPlayers(List<Player> players) {
 	    this.players = players;
@@ -43,7 +43,7 @@ public class GameLogic {
 	    }
 	}
 	
-	public void setupWalls() {
+	public void setupWalls(List<Player> players) {
 		//walls
 		//for loop for each...must be random
 //		board[board.length-1][3].setPiece(new Bamboo(".png", number, board.length-2, board ));
@@ -58,15 +58,21 @@ public class GameLogic {
 	public int calcPoints() {
 		return -1;
 	}
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public Tile[][] getBoard() {
-		// TODO Auto-generated method stub
-		return null;
+		return board;
 	}
+	
+	public static void main(String[] args) {
+	    List<Player> players = new ArrayList<>();
+	    players.add(new Player("John"));
+	    players.add(new Player("Bot 1"));
+	    players.add(new Player("Bot 2"));
+	    players.add(new Player("Bot 3"));
+
+	    GameLogic logic = new GameLogic(players);
+	    logic.setupPlayers(players);
+	}
+
 
 }

@@ -12,12 +12,12 @@ public class Meld {
 		Piece temp = a.getPiece();
 		
 		if(temp != null) {
-			temp.setNum(temp.getNum()+1);
+			temp.setValue(temp.getValue()+1); // ex. value = "1", "1" + 1 = 11
 		}
 		
 		Piece temp2 = b.getPiece();
 		if(temp2 != null) {
-			temp2.setNum(temp.getNum()+1);
+			temp2.setValue(temp.getValue()+1);
 		}
 		
 		if(!take)
@@ -52,12 +52,12 @@ public class Meld {
 	// discard pile: an a
 	// highlight the pong button
 	public static boolean pongable(ArrayList<Player> player) {
-		Player play = new Player(null); // 
+		Player play;
 		for(int i = 0; i < player.size(); i++) {
 			play = player.get(i);
-			for(int j = 0; j < play.hand.size(); j++) {
-				// fill in;
-			}
+//			for(int j = 0; j < play.hand.size(); j++) {
+//				// fill in;
+//			}
 		}
 		return true;
 	}

@@ -82,15 +82,23 @@ public abstract class Piece {
     public int getCol() {
         return col;
     }
+    
+    public Piece getPiece() {
+		// TODO Auto-generated method stub
+		return piece;
+	}
 
     public void setLocation(int row, int col) {
         this.row = row;
         this.col = col;
     }
+    
+    public void setValue(String value) {
+    	this.value = value;
+    }
 
-	public Piece getPiece() {
-		// TODO Auto-generated method stub
-		return piece;
-	}
+    public void setPiece(Piece piece) {
+    	this.piece = piece;
+    }
 }
 
