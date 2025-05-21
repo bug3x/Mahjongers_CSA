@@ -49,9 +49,10 @@ public class Meld {
 		return;
 	}
 	
+	// discard pile: an a
 	// highlight the pong button
 	public static boolean pongable(ArrayList<Player> player) {
-		Player play = new Player();
+		Player play = new Player(null); // 
 		for(int i = 0; i < player.size(); i++) {
 			play = player.get(i);
 			for(int j = 0; j < play.hand.size(); j++) {
@@ -78,8 +79,8 @@ public class Meld {
 	}
 	
 	// checking each meld boolean
-	public static void checkMelds() {
-		pongable();
+	public static void checkMelds(ArrayList<Player> playerList) {
+		pongable(playerList);
 		chowable();
 		kongable();
 		riichi();

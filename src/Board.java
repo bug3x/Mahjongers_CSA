@@ -72,6 +72,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
     	// Discard Panels (central area), may need 4 of these
     	JPanel centerDiscards = new JPanel(new GridLayout(10, 10)); // Or something custom
+    	
+    	JPanel jp = new JPanel();
 
     	// Add to main layout
     	mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
@@ -81,7 +83,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     	mainPanel.add(centerDiscards, BorderLayout.CENTER);
 
     	frame.add(mainPanel);
-
 
 		Tile[][] board = logic.getBoard();
 		for(int i =0; i < board.length;i++) {
@@ -100,7 +101,12 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
 
-    public Piece getLastDiscard() {
+    private void updateDiscardPanel() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Piece getLastDiscard() {
         return discardPile.get(discardPile.size() - 1);
     }
 

@@ -38,16 +38,16 @@ public class GameLogic {
 	    this.players = players;
 	    for (Player p : players) {
 	        for (int i = 0; i < 13; i++) {
-	            p.addToHand(wall.pop()); // you wanna randomize the wall with the 144 tiles
+	            p.addToHand(drawWall.pop()); // you wanna randomize the wall with the 144 tiles
 	        }
 	    }
 	}
 	
 	public void setupWalls() {
 		//walls
-		//for loop for each 
-		board[board.length-1][3].setPiece(new Bamboo(".png", number, board.length-2, board ));
-		board[board.length-1][4].setPiece(new Numbers("king.png", color,board.length-2,3, board ));
+		//for loop for each...must be random
+//		board[board.length-1][3].setPiece(new Bamboo(".png", number, board.length-2, board ));
+//		board[board.length-1][4].setPiece(new Numbers(".png", number ,board.length-2,3, board ));
 	}
 	
 	public void noYaku() {
@@ -59,11 +59,14 @@ public class GameLogic {
 		return -1;
 	}
 	
-	public 
-	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public Tile[][] getBoard() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
