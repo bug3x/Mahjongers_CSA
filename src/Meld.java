@@ -6,9 +6,26 @@ public class Meld {
 	// pong method, called by player (ex. player1.pong()) once given a potential set of 3
 	// will add a piece to that player
 	// utilize helper method to display new set on the board
-	public Piece[] callPong() {
+	public Piece[] callPong(Piece a, Piece b, boolean take) {
 		Piece[] set3 = new Piece[3];
 		System.out.println("pong!");
+		Piece temp = a.getPiece();
+		
+		if(temp != null) {
+			temp.setNum(temp.getNum()+1);
+		}
+		
+		Piece temp2 = b.getPiece();
+		if(temp2 != null) {
+			temp2.setNum(temp.getNum()+1);
+		}
+		
+		if(!take)
+			a.setPiece(b.getPiece());
+		else
+			a.setPiece(null);
+		
+		b.setPiece(temp);
 		return set3;
 	}
 	

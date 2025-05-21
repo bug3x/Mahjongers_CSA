@@ -3,6 +3,10 @@
 /Piece.class
 /Meld.class
 /Board.class
+BT
+/Tile.class
+/Board$2.class
+/Board$1.class
 /Player.class
 /Piece$Suit.class
 /Bamboo.class
@@ -10,3 +14,4 @@
 /Dragon.class
 /Number.class
 /Wind.class
+main
