@@ -16,9 +16,7 @@ public abstract class Piece {
     protected int row;
     protected int col;
     protected ImageIcon icon;
-    
-    public Piece piece;
-
+	
     public Piece(String type, String value, int row, int col, String imageFileName) {
         this.type = type;
         this.value = value;
@@ -82,12 +80,6 @@ public abstract class Piece {
     public int getCol() {
         return col;
     }
-    
-    public Piece getPiece() {
-		// TODO Auto-generated method stub
-		return piece;
-	}
-
     public void setLocation(int row, int col) {
         this.row = row;
         this.col = col;
@@ -95,10 +87,6 @@ public abstract class Piece {
     
     public void setValue(String value) {
     	this.value = value;
-    }
-
-    public void setPiece(Piece piece) {
-    	this.piece = piece;
     }
 }
 
