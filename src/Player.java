@@ -62,11 +62,6 @@ public class Player {
         return name;
     }
 
-	public void addToHand(Piece pop) { // added by BT for the GameLogic
-		// TODO Auto-generated method stub
-		
-	}
-
     // Optional: sort hand, check tenpai, win detection, etc.
     public void addToHand(Piece pop) {
         hand.add(pop);
