@@ -1,8 +1,3 @@
-
-
-/**
- * Represents a Mahjong tile using string-based type and value.
- */
 package src;
 
 import java.awt.*;
@@ -11,8 +6,8 @@ import javax.swing.*;
 
 public abstract class Piece {
 
-    protected String type;      // e.g., "Bamboo", "Dragon"
-    protected String value;     // e.g., "3", "Red"
+    protected String type;     
+    protected String value;     
     protected int row;
     protected int col;
     protected ImageIcon icon;
@@ -88,5 +83,10 @@ public abstract class Piece {
     public void setValue(String value) {
     	this.value = value;
     }
-}
 
+    @Override
+    public String toString() {
+        return "Piece[type=" + type + ", value=" + value + ", row=" + row + ", col=" + col + "]";
+    }
+}
+	

@@ -1,65 +1,65 @@
 package src;
 
 import java.awt.Color;
-
 import javax.swing.JButton;
 
-//copied from 
-public class Tile extends JButton{
-	private Piece piece;
-	public static int num = 0;
-	private int row, col;
-	
-	public void setRow(int row) {
-		this.row = row;
-	}
+public class Tile extends JButton {
 
-	public void setCol(int col) {
-		this.col = col;
-	}
-	
-	public Tile(int r, int c) {
-	    this.row = r;
-	    this.col = c;
-	    this.setBackground(Color.LIGHT_GRAY); // if we want to have colored tile placements for a visual cue to piece placement
-	    this.setFocusPainted(false);
-	}
+    private Piece piece;
+    private int row, col;
 
+    public static int num = 0;
 
-	public int getRow() {
-		return row;
-	}
+    public Tile(int r, int c) {
+        this.row = r;
+        this.col = c;
+        this.setBackground(Color.LIGHT_GRAY); // visual cue for placement
+        this.setFocusPainted(false);
+    }
 
-	public int getCol() {
-		return col;
-	}
+   
+    public int getRow() {
+        return row;
+    }
 
-	public void removePiece() {
-	    this.piece = null;
-	    this.setIcon(null);
-	}
+    public int getCol() {
+        return col;
+    }
 
-	public void setPiece(Piece piece) {
-	    this.piece = piece;
-	
-	    if (piece == null) {
-	        this.setIcon(null);
-	    } else {
-	        this.setIcon(piece.getIcon());
-	        piece.setLocation(row, col);  // Optional: useful if pieces need to track their position
-	    }
-	}
-	
-	public Piece getPiece() {
-		return piece;
-	}
+    public void setRow(int row) {
+        this.row = row;
+    }
 
-	public boolean hasPiece() {
-    		return piece != null;
-	}
+    public void setCol(int col) {
+        this.col = col;
+    }
 
-	@Override
-	public String toString() {
-    		return "Tile[" + row + "," + col + "] - " + (piece == null ? "empty" : piece.toString());
-	}
+    // === Piece Handling ===
+    public void setPiece(Piece piece) {
+        this.piece = piece;
+        if (piece == null) {
+            this.setIcon(null);
+        } else {
+            this.setIcon(piece.getIcon());
+            piece.setLocation(row, col);
+        }
+    }
+
+    public Piece getPiece() {
+        return piece;
+    }
+
+    public void removePiece() {
+        this.piece = null;
+        this.setIcon(null);
+    }
+
+    public boolean hasPiece() {
+        return piece != null;
+    }
+
+    @Override
+    public String toString() {
+        return "Tile[" + row + "," + col + "] - " + (piece == null ? "empty" : piece.toString());
+    }
 }

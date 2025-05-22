@@ -19,14 +19,12 @@ public class Player {
     }
 
     public boolean isGrabbing() {
-        // Example logic: maybe used to track if player is allowed to call Chi/Pon/Kan
         return true;
     }
 
     public void discardPiece(Piece piece) {
         hand.remove(piece);
         discards.add(piece);
-        // You may want to add logic for if the player is in riichi (must discard the drawn tile)
     }
 
     public Piece grabPiece(Piece piece) {
@@ -53,12 +51,10 @@ public class Player {
     public void declareRiichi() {
         if (canDeclareRiichi()) {
             inRiichi = true;
-            // Possibly lock the hand or mark it for auto-discard
         }
     }
 
     private boolean canDeclareRiichi() {
-        // Add logic to check if the hand is closed and tenpai (one tile from winning)
         return true;
     }
 
@@ -72,4 +68,17 @@ public class Player {
 	}
 
     // Optional: sort hand, check tenpai, win detection, etc.
+    public void addToHand(Piece pop) {
+        hand.add(pop);
+    }
+
+   
+    public Piece getPiece() {
+        if (hand.isEmpty()) return null;
+        return hand.get(hand.size() - 1); 
+    }
+
+    public void setPiece(Piece piece) {
+        hand.add(piece); 
+    }
 }
