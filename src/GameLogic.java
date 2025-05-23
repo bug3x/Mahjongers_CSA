@@ -132,6 +132,7 @@ public class GameLogic {
 
 	    GameLogic logic = new GameLogic(players);
 	    logic.setupPlayers(players);
+	    
 	}
 
 
