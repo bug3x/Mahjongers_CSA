@@ -62,6 +62,7 @@ public class Player {
         return name;
     }
 
+    // Optional: sort hand, check tenpai, win detection, etc.
     public void addToHand(Piece pop) {
         hand.add(pop);
     }

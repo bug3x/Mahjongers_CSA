@@ -23,9 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
 public class Board extends JPanel implements MouseListener, ActionListener {
-	private List<Piece> discardPile;
-    private List<Meld> revealedMelds;
-    
     JFrame frame;
 
     GameLogic logic;
@@ -35,12 +32,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
     
     public Board() {
-    	discardPile = new ArrayList<>();
-        revealedMelds = new ArrayList<>();
-        frame = new JFrame("Mahjong");
-        logic = new GameLogic();
+    	frame = new JFrame("Mahjong");
+        logic = new GameLogic(GameLogic.players);
         setup();
-		
 	}
     
     public void setup() {
@@ -54,10 +48,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setUndecorated(true);
 		frame.setResizable(false);		
-		frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+		frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
 		//show the frame
-		frame.setVisible(true);	
+		frame.setVisible(true);
 		
 	}
     
@@ -72,6 +66,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
     	// Discard Panels (central area), may need 4 of these
     	JPanel centerDiscards = new JPanel(new GridLayout(10, 10)); // Or something custom
+    	
+    	JPanel jp = new JPanel();
 
     	// Add to main layout
     	mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
@@ -81,7 +77,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     	mainPanel.add(centerDiscards, BorderLayout.CENTER);
 
     	frame.add(mainPanel);
-
 
 		Tile[][] board = logic.getBoard();
 		for(int i =0; i < board.length;i++) {
@@ -94,18 +89,23 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 		frame.add(jp);
 	}
     
-    public void addToDiscard(Piece p) {
-        discardPile.add(p);
+    public void addToDiscard(Piece p, ArrayList<Piece> discard) {
+        discard.add(p);
         updateDiscardPanel(); // hypothetical method
     }
 
 
-    public Piece getLastDiscard() {
-        return discardPile.get(discardPile.size() - 1);
+    private void updateDiscardPanel() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Piece getLastDiscard(ArrayList<Piece> discard) {
+        return discard.get(discard.size() - 1);
     }
 
-    public void removeLastDiscard() {
-        if (!discardPile.isEmpty()) discardPile.remove(discardPile.size() - 1);
+    public void removeLastDiscard(ArrayList<Piece> discard) {
+        if (!discard.isEmpty()) discard.remove(discard.size() - 1);
     }
     
     public void reset() {
@@ -232,5 +232,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public static void main(String[] args) {
+		// Create an instance of the board
+		new Board();
 
+	}
 }

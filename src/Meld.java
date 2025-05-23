@@ -1,11 +1,11 @@
-
+package src;
 import java.util.ArrayList;
 
 public class Meld {
 	// pong method, called by player (ex. player1.pong()) once given a potential set of 3
 	// will add a piece to that player
 	// utilize helper method to display new set on the board
-	public Piece[] callPong(Piece a, Piece b, boolean take) {
+	public Piece[] callPong(Tile a, Tile b, boolean take) {
 		Piece[] set3 = new Piece[3];
 		System.out.println("pong!");
 		Piece temp = a.getPiece();
@@ -19,10 +19,12 @@ public class Meld {
 			temp2.setValue(temp.getValue()+1);
 		}
 		
-		if(!take)
+		if(!take) {
 			a.setPiece(b.getPiece());
-		else
+		}
+		else {
 			a.setPiece(null);
+		}
 		
 		b.setPiece(temp);
 		return set3;

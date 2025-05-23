@@ -11,7 +11,6 @@ public abstract class Piece {
     protected int row;
     protected int col;
     protected ImageIcon icon;
-	private Piece innerPiece;
 	
     public Piece(String type, String value, int row, int col, String imageFileName) {
         this.type = type;
@@ -83,14 +82,6 @@ public abstract class Piece {
     
     public void setValue(String value) {
     	this.value = value;
-    }
-    
-    public Piece getPiece() {
-        return getPiece();
-    }
-
-    public void setPiece(Piece piece) {
-        this.innerPiece = piece;
     }
 
     @Override
