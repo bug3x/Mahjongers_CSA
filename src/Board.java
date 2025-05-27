@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -152,12 +153,16 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         // Set this panel as content pane
         frame.setContentPane(this);
         frame.setVisible(true);
+        
+        this.logic = new GameLogic(players); // or however you're constructing i
+        Stack<Piece> draw = logic.drawWall;
+        List<Piece> dead = logic.deadWall;
+        setupBoard(draw, dead);
     }
     
-    public void setupBoard() {
+    public void setupBoard(Stack<Piece> drawW, List<Piece> deadW) {
       JPanel mainPanel = new JPanel(new BorderLayout());
       mainPanel.setOpaque(false);
-      
       
       JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
       JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
@@ -174,12 +179,12 @@ public class Board extends JPanel implements MouseListener, ActionListener {
       mainPanel.add(playerRightHand, BorderLayout.EAST);
       mainPanel.add(centerDiscards, BorderLayout.CENTER);
 
-      Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
-      for (Tile[] row : board) {
-          for (Tile tile : row) {
-              centerDiscards.add(tile); // or a different panel as needed
-          }
-      }
+//      Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
+//      for (Tile[] row : board) {
+//          for (Tile tile : row) {
+//              centerDiscards.add(tile); // or a different panel as needed
+//          }
+//      }
 
       add(mainPanel, BorderLayout.CENTER);
   }
