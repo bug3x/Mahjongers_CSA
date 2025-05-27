@@ -97,6 +97,9 @@ import javax.swing.JRadioButtonMenuItem;
 public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
     private Image backgroundImage;
+    
+    private GameLogic logic;
+    private ArrayList<Player> players;
 
     public Board() {
         frame = new JFrame("Mahjong");
@@ -150,6 +153,36 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         frame.setContentPane(this);
         frame.setVisible(true);
     }
+    
+    public void setupBoard() {
+      JPanel mainPanel = new JPanel(new BorderLayout());
+      mainPanel.setOpaque(false);
+      
+      
+      JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
+      JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
+      JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
+      JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
+      JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
+
+      JPanel[] hands = { playerBottomHand, playerLeftHand, playerTopHand, playerRightHand, centerDiscards };
+      for (JPanel panel : hands) panel.setOpaque(false);
+
+      mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
+      mainPanel.add(playerTopHand, BorderLayout.NORTH);
+      mainPanel.add(playerLeftHand, BorderLayout.WEST);
+      mainPanel.add(playerRightHand, BorderLayout.EAST);
+      mainPanel.add(centerDiscards, BorderLayout.CENTER);
+
+      Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
+      for (Tile[] row : board) {
+          for (Tile tile : row) {
+              centerDiscards.add(tile); // or a different panel as needed
+          }
+      }
+
+      add(mainPanel, BorderLayout.CENTER);
+  }
 
     @Override
     protected void paintComponent(Graphics g) {
