@@ -9,8 +9,8 @@ public class GameLogic {
 //	private Board board;
 	private Tile[][] board;
 	
-	public List<Piece> deadWall;
-	public Stack<Piece> drawWall; // the walls to take pieces from
+	private List<Piece> deadWall;
+	private Stack<Piece> drawWall; // the walls to take pieces from
 	public static List<Player> players;
 	
 	private int currentPlayerIndex;
