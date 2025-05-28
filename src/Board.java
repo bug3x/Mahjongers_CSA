@@ -30,6 +30,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
     private Image backgroundImage;
     private JPanel mainPanel;
+    private JPanel newPanel;
     
     private GameLogic logic;
     private ArrayList<Player> players;
@@ -116,8 +117,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
     
     public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
-        mainPanel = new JPanel(new GridLayout(1, 122));
-        mainPanel.setOpaque(false);
+        newPanel = new JPanel(new GridLayout(1, 122));
+        newPanel.setOpaque(false);
 
         // Create the discard and hands layout in the center
         JPanel boardPanel = new JPanel(new BorderLayout());
@@ -143,7 +144,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         boardPanel.add(playerRightHand, BorderLayout.EAST);
 
         // Add boardPanel to main
-        mainPanel.add(boardPanel, BorderLayout.CENTER);
+        newPanel.add(boardPanel, BorderLayout.CENTER);
 
         // Now create and show the draw wall on top
         JPanel drawWallPanel = new JPanel(new GridLayout(1, drawW.size()));
@@ -156,10 +157,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         }
 
         // Add draw wall panel at top
-        mainPanel.add(drawWallPanel, BorderLayout.NORTH);
+        newPanel.add(drawWallPanel, BorderLayout.NORTH);
 
         // Finally add main panel to the Board
-        this.add(mainPanel, BorderLayout.CENTER);
+        mainPanel.add(newPanel, BorderLayout.CENTER);
     }
 
 
