@@ -11,12 +11,14 @@ public abstract class Piece {
     protected int row;
     protected int col;
     protected ImageIcon icon;
+    protected String imageFileName;
 	
     public Piece(String type, String value, int row, int col, String imageFileName) {
         this.type = type;
         this.value = value;
         this.row = row;
         this.col = col;
+        this.imageFileName = imageFileName;
         setIcon(imageFileName);
     }
 
@@ -75,6 +77,11 @@ public abstract class Piece {
     public int getCol() {
         return col;
     }
+    
+    public String getImageFileName() {
+        return imageFileName;
+    }
+
     public void setLocation(int row, int col) {
         this.row = row;
         this.col = col;
