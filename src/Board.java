@@ -29,6 +29,7 @@ import javax.swing.JRadioButtonMenuItem;
 public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
     private Image backgroundImage;
+    private JPanel mainPanel;
     
     private GameLogic logic;
     private ArrayList<Player> players;
@@ -36,6 +37,18 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public Board() {
         frame = new JFrame("Mahjong");
         backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();
+        
+        //construct player list
+        players = new ArrayList<>();
+        players.add(new Player("Player"));
+        players.add(new Player("Bot 1"));
+        players.add(new Player("Bot 2"));
+        players.add(new Player("Bot 3"));
+
+        logic = new GameLogic(players);
+        logic.setupPlayers(players);
+        
+        //setup gui
         setup();
     }
     
@@ -83,7 +96,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         this.setOpaque(false); // Let background image show
 
         // Add one transparent main panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(false); // transparent
         this.add(mainPanel, BorderLayout.CENTER);
 
@@ -97,53 +110,58 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         frame.setVisible(true);
         
         this.logic = new GameLogic(players); // or however you're constructing i
-        Stack<Piece> draw = logic.drawWall;
-        List<Piece> dead = logic.deadWall;
-        setupBoard(draw, dead);
+        logic.setupPlayers(players);
+        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+
     }
     
-    public void setupBoard(Stack<Piece> drawW, List<Piece> deadW) {
-      JPanel mainPanel = new JPanel(new BorderLayout());
-      mainPanel.setOpaque(false);
-      
-      JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
-      JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
-      JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
-      JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
-      JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
+    public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
+        mainPanel = new JPanel(new GridLayout(1, 122));
+        mainPanel.setOpaque(false);
 
-      JPanel[] hands = { playerBottomHand, playerLeftHand, playerTopHand, playerRightHand, centerDiscards };
-      for (JPanel panel : hands) panel.setOpaque(false);
+        // Create the discard and hands layout in the center
+        JPanel boardPanel = new JPanel(new BorderLayout());
+        boardPanel.setOpaque(false);
 
-      mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
-      mainPanel.add(playerTopHand, BorderLayout.NORTH);
-      mainPanel.add(playerLeftHand, BorderLayout.WEST);
-      mainPanel.add(playerRightHand, BorderLayout.EAST);
-      mainPanel.add(centerDiscards, BorderLayout.CENTER);
+        JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
+        centerDiscards.setOpaque(false);
+        boardPanel.add(centerDiscards, BorderLayout.CENTER);
 
-//      Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
-//      for (Tile[] row : board) {
-//          for (Tile tile : row) {
-//              centerDiscards.add(tile); // or a different panel as needed
-//          }
-//      } 
+        JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
+        JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
+        JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
+        JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
 
-      add(mainPanel, BorderLayout.CENTER);
-      
-      // randomize pieces
-      JPanel drawWallPanel = new JPanel(new GridLayout(2, 30)); // adjust to fit all 122
-      drawWallPanel.setOpaque(false);
-      
-      for (Piece piece : drawW) {
-    	    ImageIcon icon = new ImageIcon("imgs/" + piece.getImageFileName()); // or wherever your piece images are
-    	    JLabel label = new JLabel(icon);
-    	    drawWallPanel.add(label);
-    	}
-      
-      mainPanel.add(drawWallPanel, BorderLayout.CENTER); // or another layout position
+        playerBottomHand.setOpaque(false);
+        playerTopHand.setOpaque(false);
+        playerLeftHand.setOpaque(false);
+        playerRightHand.setOpaque(false);
 
-      
-  }
+        boardPanel.add(playerBottomHand, BorderLayout.SOUTH);
+        boardPanel.add(playerTopHand, BorderLayout.NORTH);
+        boardPanel.add(playerLeftHand, BorderLayout.WEST);
+        boardPanel.add(playerRightHand, BorderLayout.EAST);
+
+        // Add boardPanel to main
+        mainPanel.add(boardPanel, BorderLayout.CENTER);
+
+        // Now create and show the draw wall on top
+        JPanel drawWallPanel = new JPanel(new GridLayout(1, drawW.size()));
+        drawWallPanel.setOpaque(false);
+
+        for (Piece piece : drawW) {
+            ImageIcon icon = new ImageIcon("imgs/" + piece.getImageFileName());
+            JLabel label = new JLabel(icon);
+            drawWallPanel.add(label);
+        }
+
+        // Add draw wall panel at top
+        mainPanel.add(drawWallPanel, BorderLayout.NORTH);
+
+        // Finally add main panel to the Board
+        this.add(mainPanel, BorderLayout.CENTER);
+    }
+
 
     @Override
     protected void paintComponent(Graphics g) {
