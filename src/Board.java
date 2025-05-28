@@ -1,9 +1,11 @@
 package src;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -22,72 +24,85 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
+//public class Board extends JPanel implements MouseListener, ActionListener {
+//    JFrame frame;
+//
+//    GameLogic logic;
+//    
+//    private final int width 	= 800;
+//	private final int height 	= 800;
+//
+//	private Image backgroundImage;
+//
+
+//
+//
+//    
+//	public void setup() {
+//        frame.setContentPane(this);
+//        this.setLayout(new BorderLayout());
+//        this.setOpaque(false);
+//
+//        setupBoard();
+//        addMenus();
+//
+//        frame.setSize(width, height);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setUndecorated(true);
+//        frame.setResizable(false);
+//        frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
+//        frame.setVisible(true);
+//
+//        revalidate();
+//        repaint();
+//    }
+//
+//    public void setupBoard() {
+//        JPanel mainPanel = new JPanel(new BorderLayout());
+//        mainPanel.setOpaque(false);
+//
+//        JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
+//        JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
+//        JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
+//        JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
+//        JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
+//
+//        JPanel[] hands = { playerBottomHand, playerLeftHand, playerTopHand, playerRightHand, centerDiscards };
+//        for (JPanel panel : hands) panel.setOpaque(false);
+//
+//        mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
+//        mainPanel.add(playerTopHand, BorderLayout.NORTH);
+//        mainPanel.add(playerLeftHand, BorderLayout.WEST);
+//        mainPanel.add(playerRightHand, BorderLayout.EAST);
+//        mainPanel.add(centerDiscards, BorderLayout.CENTER);
+//
+////        Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
+////        for (Tile[] row : board) {
+////            for (Tile tile : row) {
+////                centerDiscards.add(tile); // or a different panel as needed
+////                tile.addMouseListener(this);
+////            }
+////        }
+//
+//        add(mainPanel, BorderLayout.CENTER);
+//    }
+
+
+    
+    
+    
+	
+
+
 public class Board extends JPanel implements MouseListener, ActionListener {
-    JFrame frame;
+    private JFrame frame;
+    private Image backgroundImage;
 
-    GameLogic logic;
-    
-    private final int width 	= 800;
-	private final int height 	= 800;
-
-    
     public Board() {
-    	frame = new JFrame("Mahjong");
-        logic = new GameLogic(GameLogic.players);
+        frame = new JFrame("Mahjong");
+        backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();
         setup();
-	}
-    
-    public void setup() {
-		
-		
-		frame.setSize(width, height);
-		setupBoard();
-		addMenus();
-		
-		//add action for x button for a JFrame
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setUndecorated(true);
-		frame.setResizable(false);		
-		frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
-		
-		//show the frame
-		frame.setVisible(true);
-		
-	}
-    
-    public void setupBoard() {
-    	JPanel mainPanel = new JPanel(new BorderLayout());
-
-    	// Player Hands
-    	JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
-    	JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
-    	JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
-    	JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
-
-    	// Discard Panels (central area), may need 4 of these
-    	JPanel centerDiscards = new JPanel(new GridLayout(10, 10)); // Or something custom
-    	
-    	JPanel jp = new JPanel();
-
-    	// Add to main layout
-    	mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
-    	mainPanel.add(playerTopHand, BorderLayout.NORTH);
-    	mainPanel.add(playerLeftHand, BorderLayout.WEST);
-    	mainPanel.add(playerRightHand, BorderLayout.EAST);
-    	mainPanel.add(centerDiscards, BorderLayout.CENTER);
-
-    	frame.add(mainPanel);
-
-		Tile[][] board = logic.getBoard();
-		for(int i =0; i < board.length;i++) {
-			for(int j = 0; j < board[0].length;j++) {
-				jp.add(board[i][j]);
-				board[i][j].addMouseListener(this);
-			}
-		}
-		
-		frame.add(jp);
-	}
+    }
     
     public void addToDiscard(Piece p, ArrayList<Piece> discard) {
         discard.add(p);
@@ -107,44 +122,54 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public void removeLastDiscard(ArrayList<Piece> discard) {
         if (!discard.isEmpty()) discard.remove(discard.size() - 1);
     }
+
+    public void setup() {
+        // Setup frame first
+        frame.setSize(800, 800);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setUndecorated(true);
+        frame.setResizable(false);
+        frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addMenus();
+
+        // Setup this panel
+        this.setLayout(new BorderLayout());
+        this.setOpaque(false); // Let background image show
+
+        // Add one transparent main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setOpaque(false); // transparent
+        this.add(mainPanel, BorderLayout.CENTER);
+
+        // Example transparent child
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Set this panel as content pane
+        frame.setContentPane(this);
+        frame.setVisible(true);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        } else {
+            g.setColor(Color.RED);
+            g.drawString("Image not found", 20, 20);
+        }
+    }
     
     public void reset() {
 		 frame.dispose(); // Close the current JFrame
 		 new Board();
 	}
     
-    public void paint(Graphics g) {
-		System.out.println("paint");
-	}
     
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Draw tiles, melds, etc.
-    }
     
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		repaint();
- 	}
-	
-	// template for main menu screen buttons
-	public void addMenus() {
+    public void addMenus() {
 		//Where the GUI is created:
 		JMenuBar menuBar;
 		JMenu menu, submenu;
@@ -221,21 +246,16 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 		frame.setJMenuBar(menuBar);
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+    public static void main(String[] args) {
+        new Board();
+    }
 
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	public static void main(String[] args) {
-		// Create an instance of the board
-		new Board();
-
-	}
+    // Required methods, stubbed
+    public void mouseClicked(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
+    public void actionPerformed(ActionEvent e) {}
 }
+
