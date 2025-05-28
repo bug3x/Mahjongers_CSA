@@ -18,82 +18,13 @@ import java.util.Stack;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-
-//public class Board extends JPanel implements MouseListener, ActionListener {
-//    JFrame frame;
-//
-//    GameLogic logic;
-//    
-//    private final int width 	= 800;
-//	private final int height 	= 800;
-//
-//	private Image backgroundImage;
-//
-
-//
-//
-//    
-//	public void setup() {
-//        frame.setContentPane(this);
-//        this.setLayout(new BorderLayout());
-//        this.setOpaque(false);
-//
-//        setupBoard();
-//        addMenus();
-//
-//        frame.setSize(width, height);
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.setUndecorated(true);
-//        frame.setResizable(false);
-//        frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
-//        frame.setVisible(true);
-//
-//        revalidate();
-//        repaint();
-//    }
-//
-//    public void setupBoard() {
-//        JPanel mainPanel = new JPanel(new BorderLayout());
-//        mainPanel.setOpaque(false);
-//
-//        JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
-//        JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
-//        JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
-//        JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
-//        JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
-//
-//        JPanel[] hands = { playerBottomHand, playerLeftHand, playerTopHand, playerRightHand, centerDiscards };
-//        for (JPanel panel : hands) panel.setOpaque(false);
-//
-//        mainPanel.add(playerBottomHand, BorderLayout.SOUTH);
-//        mainPanel.add(playerTopHand, BorderLayout.NORTH);
-//        mainPanel.add(playerLeftHand, BorderLayout.WEST);
-//        mainPanel.add(playerRightHand, BorderLayout.EAST);
-//        mainPanel.add(centerDiscards, BorderLayout.CENTER);
-//
-////        Tile[][] board = logic.getBoard(); // will result in button objects following your cursor
-////        for (Tile[] row : board) {
-////            for (Tile tile : row) {
-////                centerDiscards.add(tile); // or a different panel as needed
-////                tile.addMouseListener(this);
-////            }
-////        }
-//
-//        add(mainPanel, BorderLayout.CENTER);
-//    }
-
-
-    
-    
-    
-	
-
 
 public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
@@ -126,6 +57,17 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public void removeLastDiscard(ArrayList<Piece> discard) {
         if (!discard.isEmpty()) discard.remove(discard.size() - 1);
     }
+    
+    public void displayDrawPiece(Player player) {
+        if (!logic.drawWall.isEmpty()) {
+            Piece p = logic.drawWall.pop();
+            player.addToHand(p);
+            // update player panel and drawWallPanel
+            updateDrawWallPanel();
+            updatePlayerHand(player);
+        }
+    }
+
 
     public void setup() {
         // Setup frame first
@@ -184,9 +126,23 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 //          for (Tile tile : row) {
 //              centerDiscards.add(tile); // or a different panel as needed
 //          }
-//      }
+//      } 
 
       add(mainPanel, BorderLayout.CENTER);
+      
+      // randomize pieces
+      JPanel drawWallPanel = new JPanel(new GridLayout(2, 30)); // adjust to fit all 122
+      drawWallPanel.setOpaque(false);
+      
+      for (Piece piece : drawW) {
+    	    ImageIcon icon = new ImageIcon("imgs/" + piece.getImageFileName()); // or wherever your piece images are
+    	    JLabel label = new JLabel(icon);
+    	    drawWallPanel.add(label);
+    	}
+      
+      mainPanel.add(drawWallPanel, BorderLayout.CENTER); // or another layout position
+
+      
   }
 
     @Override

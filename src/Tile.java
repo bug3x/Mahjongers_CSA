@@ -13,7 +13,7 @@ public class Tile extends JButton {
     public Tile(int r, int c) {
         this.row = r;
         this.col = c;
-        this.setBackground(Color.LIGHT_GRAY); // visual cue for placement
+//        this.setBackground(Color.LIGHT_GRAY); // visual cue for placement comment out, want transparent
         this.setFocusPainted(false);
     }
 
