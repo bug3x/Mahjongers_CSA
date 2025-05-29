@@ -12,7 +12,7 @@ public class Dragon extends Piece {
 
     @Override
     public void operation() {
-        System.out.println("Dragon color: " + color);
+        System.out.println("Dragon : " + color);
     }
 
     @Override
