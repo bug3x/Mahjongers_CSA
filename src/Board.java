@@ -41,6 +41,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private Image backgroundImage;
     private JPanel mainPanel;
     private JPanel newPanel;
+    private JPanel centerDiscards;
     
     private GameLogic logic;
     private ArrayList<Player> players;
@@ -69,11 +70,21 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         updateDiscardPanel(); // hypothetical method
     }
 
-
+    
+    // Then implement updateDiscardPanel():
     private void updateDiscardPanel() {
-		// TODO Auto-generated method stub
-		
-	}
+        centerDiscards.removeAll();
+     // In setupBoard(), after creating centerDiscards:
+        this.centerDiscards = centerDiscards;
+        ArrayList<Piece> discards = logic.getDiscards(); // Assume method exists
+        for (Piece p : discards) {
+            JLabel label = new JLabel(p.getIcon());
+            centerDiscards.add(label);
+        }
+        centerDiscards.revalidate();
+        centerDiscards.repaint();
+    }
+
 
 	public Piece getLastDiscard(ArrayList<Piece> discard) {
         return discard.get(discard.size() - 1);
@@ -127,8 +138,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         Dimension tileSize = new Dimension(40, 60);
-        int hGap = 12;
-        int vGap = 6;
+        int hGap = 0;
+        int vGap = 0;
 
         // === CENTER DISCARD GRID ===
         JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
@@ -148,9 +159,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // === PLAYER HAND PANELS ===
         JPanel playerBottom = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
+
         JPanel playerTop = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
-        JPanel playerLeft = new JPanel();
-        JPanel playerRight = new JPanel();
+        JPanel playerLeft = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, 0, vGap));
+        JPanel playerRight = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, 0, vGap));
 
         playerBottom.setOpaque(false);
         playerTop.setOpaque(false);
