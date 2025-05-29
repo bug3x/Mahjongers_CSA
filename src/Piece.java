@@ -1,6 +1,7 @@
 package src;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
 
@@ -12,6 +13,8 @@ public abstract class Piece {
     protected int col;
     protected ImageIcon icon;
     protected String imageFileName;
+    
+    private AffineTransform tx;
 	
     public Piece(String type, String value, int row, int col, String imageFileName) {
         this.type = type;
@@ -20,6 +23,8 @@ public abstract class Piece {
         this.col = col;
         this.imageFileName = imageFileName;
         setIcon(imageFileName);
+        
+        tx = AffineTransform.getTranslateInstance(0, 0);
     }
 
     private void setIcon(String fileName) {
@@ -29,31 +34,14 @@ public abstract class Piece {
     }
 
     private static ImageIcon createScaledIcon(Image img, int width, int height) {
+        Image scaledImage = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         BufferedImage buffered = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = buffered.createGraphics();
-        g2d.setColor(new Color(0, 0, 0, 0));
-        g2d.fillRect(0, 0, width, height);
-
-        int originalWidth = img.getWidth(null);
-        int originalHeight = img.getHeight(null);
-        int scaledWidth = width;
-        int scaledHeight = height;
-
-        if (originalWidth > 0 && originalHeight > 0) {
-            double aspectRatio = (double) originalWidth / originalHeight;
-            if (width / aspectRatio <= height) {
-                scaledHeight = (int) (width / aspectRatio);
-            } else {
-                scaledWidth = (int) (height * aspectRatio);
-            }
-        }
-
-        int x = (width - scaledWidth) / 2;
-        int y = (height - scaledHeight) / 2;
-        g2d.drawImage(img.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH), x, y, null);
+        g2d.drawImage(scaledImage, 0, 0, null);
         g2d.dispose();
         return new ImageIcon(buffered);
     }
+
 
     public abstract void operation();
     public abstract void operation2();
