@@ -2,19 +2,29 @@ package src;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -34,6 +44,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     
     private GameLogic logic;
     private ArrayList<Player> players;
+    private List<Tile> bottomHandTiles = new ArrayList<>();
 
     public Board() {
         frame = new JFrame("Mahjong");
@@ -77,14 +88,13 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             Piece p = logic.drawWall.pop();
             player.addToHand(p);
             // update player panel and drawWallPanel
-            updateDrawWallPanel();
-            updatePlayerHand(player);
+//            updateDrawWallPanel();
+//            updatePlayerHand(player);
         }
     }
-
-
+    
     public void setup() {
-        // Setup frame first
+        // Setup frame
         frame.setSize(800, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setUndecorated(true);
@@ -94,74 +104,236 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Setup this panel
         this.setLayout(new BorderLayout());
-        this.setOpaque(false); // Let background image show
+        this.setOpaque(false); // Let background show
 
-        // Add one transparent main panel
+        // Transparent main panel
         mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false); // transparent
+        mainPanel.setOpaque(false);
         this.add(mainPanel, BorderLayout.CENTER);
 
-        // Example transparent child
-        JPanel centerPanel = new JPanel();
-        centerPanel.setOpaque(false);
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-        // Set this panel as content pane
+        // Set this panel as the content pane and show frame
         frame.setContentPane(this);
         frame.setVisible(true);
-        
-        this.logic = new GameLogic(players); // or however you're constructing i
-        logic.setupPlayers(players);
+
+        // Build the visual board
         setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+    }
+
+
+
+    public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
+        newPanel = new JPanel(new BorderLayout());
+        newPanel.setOpaque(false);
+        newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        Dimension tileSize = new Dimension(40, 60);
+        int hGap = 12;
+        int vGap = 6;
+
+        // === CENTER DISCARD GRID ===
+        JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
+        centerDiscards.setOpaque(false);
+        centerDiscards.setPreferredSize(new Dimension(240, 180));
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                Tile tile = new Tile(r, c);
+                tile.setOpaque(false);
+                tile.setContentAreaFilled(false);
+                tile.setPreferredSize(tileSize);
+                centerDiscards.add(tile);
+            }
+        }
+        
+        
+
+        // === PLAYER HAND PANELS ===
+        JPanel playerBottom = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
+        JPanel playerTop = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
+        JPanel playerLeft = new JPanel();
+        JPanel playerRight = new JPanel();
+
+        playerBottom.setOpaque(false);
+        playerTop.setOpaque(false);
+        playerLeft.setOpaque(false);
+        playerRight.setOpaque(false);
+
+        playerLeft.setLayout(new BoxLayout(playerLeft, BoxLayout.Y_AXIS));
+        playerRight.setLayout(new BoxLayout(playerRight, BoxLayout.Y_AXIS));
+
+        // === WRAPPER PANELS ===
+        JPanel bottomWrapper = new JPanel(new BorderLayout());
+        JPanel leftWrapper = new JPanel(new BorderLayout());
+        JPanel rightWrapper = new JPanel(new BorderLayout());
+
+        bottomWrapper.setOpaque(false);
+        leftWrapper.setOpaque(false);
+        rightWrapper.setOpaque(false);
+
+        bottomWrapper.setPreferredSize(new Dimension(800, 120));
+        leftWrapper.setPreferredSize(new Dimension(100, 600));
+        rightWrapper.setPreferredSize(new Dimension(100, 600));
+        bottomWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        // === VERTICAL CENTERING FOR LEFT/RIGHT HANDS ===
+        JPanel leftInner = new JPanel();
+        leftInner.setOpaque(false);
+        leftInner.setLayout(new BoxLayout(leftInner, BoxLayout.Y_AXIS));
+        leftInner.add(Box.createVerticalGlue());
+        leftInner.add(playerLeft);
+        leftInner.add(Box.createVerticalGlue());
+        leftWrapper.add(leftInner, BorderLayout.CENTER);
+
+        JPanel rightInner = new JPanel();
+        rightInner.setOpaque(false);
+        rightInner.setLayout(new BoxLayout(rightInner, BoxLayout.Y_AXIS));
+        rightInner.add(Box.createVerticalGlue());
+        rightInner.add(playerRight);
+        rightInner.add(Box.createVerticalGlue());
+        rightWrapper.add(rightInner, BorderLayout.CENTER);
+
+        bottomWrapper.add(playerBottom, BorderLayout.CENTER);
+
+        // === CREATE TILES ===
+        bottomHandTiles.clear();
+        for (int i = 0; i < 13; i++) {
+            Tile b = new Tile(0, i);
+            b.setOpaque(false);
+            b.setContentAreaFilled(false);
+            b.setPreferredSize(tileSize);
+            playerBottom.add(b);
+            bottomHandTiles.add(b);
+
+            Tile t = new Tile(1, i);
+            t.setOpaque(false);
+            t.setContentAreaFilled(false);
+            t.setPreferredSize(tileSize);
+            playerTop.add(t);
+
+            Tile l = new Tile(i, 0);
+            l.setOpaque(false);
+            l.setContentAreaFilled(false);
+            l.setPreferredSize(tileSize);
+            l.setAlignmentX(Component.CENTER_ALIGNMENT);
+            playerLeft.add(l);
+
+            Tile r = new Tile(i, 1);
+            r.setOpaque(false);
+            r.setContentAreaFilled(false);
+            r.setPreferredSize(tileSize);
+            r.setAlignmentX(Component.CENTER_ALIGNMENT);
+            playerRight.add(r);
+        }
+
+        // === TABLE AREA ===
+        JPanel tableArea = new JPanel(new BorderLayout());
+        tableArea.setOpaque(false);
+        tableArea.add(centerDiscards, BorderLayout.CENTER);
+        tableArea.add(playerTop, BorderLayout.NORTH);
+        tableArea.add(bottomWrapper, BorderLayout.SOUTH);
+        tableArea.add(leftWrapper, BorderLayout.WEST);
+        tableArea.add(rightWrapper, BorderLayout.EAST);
+
+        // === ASSEMBLE FULL BOARD ===
+        newPanel.add(tableArea, BorderLayout.CENTER);
+
+        // === ADD TO MAIN ===
+        mainPanel.add(newPanel, BorderLayout.CENTER);
 
     }
-    
-    public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
-        newPanel = new JPanel(new GridLayout(1, 122));
-        newPanel.setOpaque(false);
 
-        // Create the discard and hands layout in the center
-        JPanel boardPanel = new JPanel(new BorderLayout());
-        boardPanel.setOpaque(false);
 
-        JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
-        centerDiscards.setOpaque(false);
-        boardPanel.add(centerDiscards, BorderLayout.CENTER);
+    private JPanel createPlayerHandsPanel(Stack<Piece> drawW) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
 
         JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
         JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
         JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
         JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
 
-        playerBottomHand.setOpaque(false);
-        playerTopHand.setOpaque(false);
-        playerLeftHand.setOpaque(false);
-        playerRightHand.setOpaque(false);
+        for (JPanel p : new JPanel[]{playerBottomHand, playerTopHand, playerLeftHand, playerRightHand})
+            p.setOpaque(false);
 
-        boardPanel.add(playerBottomHand, BorderLayout.SOUTH);
-        boardPanel.add(playerTopHand, BorderLayout.NORTH);
-        boardPanel.add(playerLeftHand, BorderLayout.WEST);
-        boardPanel.add(playerRightHand, BorderLayout.EAST);
+        panel.add(playerBottomHand, BorderLayout.SOUTH);
+        panel.add(playerTopHand, BorderLayout.NORTH);
+        panel.add(playerLeftHand, BorderLayout.WEST);
+        panel.add(playerRightHand, BorderLayout.EAST);
 
-        // Add boardPanel to main
-        newPanel.add(boardPanel, BorderLayout.CENTER);
-
-        // Now create and show the draw wall on top
-        JPanel drawWallPanel = new JPanel(new GridLayout(1, drawW.size()));
-        drawWallPanel.setOpaque(false);
-
-        for (Piece piece : drawW) {
-            ImageIcon icon = new ImageIcon("imgs/" + piece.getImageFileName());
-            JLabel label = new JLabel(icon);
-            drawWallPanel.add(label);
+        for (int i = 0; i < 13; i++) {
+            playerBottomHand.add(new JLabel(drawW.pop().getIcon()));
+            playerRightHand.add(new JLabel(rotateIcon(drawW.pop().getIcon(), 270)));
+            playerTopHand.add(new JLabel(rotateIcon(drawW.pop().getIcon(), 180)));
+            playerLeftHand.add(new JLabel(rotateIcon(drawW.pop().getIcon(), 90)));
         }
 
-        // Add draw wall panel at top
-        newPanel.add(drawWallPanel, BorderLayout.NORTH);
-
-        // Finally add main panel to the Board
-        mainPanel.add(newPanel, BorderLayout.CENTER);
+        return panel;
     }
+
+
+    private JPanel createWallPanels(Stack<Piece> drawW, List<Piece> deadW) {
+        JPanel topWall = new JPanel(new GridLayout(2, 19));
+        JPanel rightWall = new JPanel(new GridLayout(19, 2));
+        JPanel bottomWall = new JPanel(new GridLayout(2, 19));
+        JPanel leftWall = new JPanel(new GridLayout(19, 2));
+        for (JPanel panel : new JPanel[]{topWall, rightWall, bottomWall, leftWall})
+            panel.setOpaque(false);
+
+        int totalTiles = drawW.size() + deadW.size();
+        for (int i = 0; i < totalTiles; i++) {
+            Piece piece = (i < drawW.size()) ? drawW.get(i) : deadW.get(i - drawW.size());
+            JLabel label;
+
+            if (i < 38) {
+                label = new JLabel(rotateIcon(piece.getIcon(), 180));
+                topWall.add(label);
+            } else if (i < 76) {
+                label = new JLabel(rotateIcon(piece.getIcon(), 270));
+                rightWall.add(label);
+            } else if (i < 114) {
+                label = new JLabel(piece.getIcon());
+                bottomWall.add(label);
+            } else {
+                label = new JLabel(rotateIcon(piece.getIcon(), 90));
+                leftWall.add(label);
+            }
+        }
+
+        // Dora indicator (first tile of dead wall)
+        if (!deadW.isEmpty()) {
+            JLabel doraLabel = new JLabel(rotateIcon(deadW.get(0).getIcon(), 270));
+            doraLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            rightWall.add(doraLabel); // Show on right wall
+        }
+
+        JPanel wallWrapper = new JPanel(new BorderLayout());
+        wallWrapper.setOpaque(false);
+        wallWrapper.add(topWall, BorderLayout.NORTH);
+        wallWrapper.add(rightWall, BorderLayout.EAST);
+        wallWrapper.add(bottomWall, BorderLayout.SOUTH);
+        wallWrapper.add(leftWall, BorderLayout.WEST);
+
+        return wallWrapper;
+    }
+
+
+    private ImageIcon rotateIcon(Icon icon, double angle) {
+        if (!(icon instanceof ImageIcon)) return null;
+        ImageIcon ii = (ImageIcon) icon;
+        Image img = ii.getImage();
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+
+        BufferedImage rotated = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotated.createGraphics();
+        g2d.rotate(Math.toRadians(angle), w / 2.0, h / 2.0);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return new ImageIcon(rotated);
+    }
+
+
+
 
 
     @Override
