@@ -41,6 +41,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private GameLogic logic;
     private ArrayList<Player> players;
     private List<Tile> bottomHandTiles = new ArrayList<>();
+  
     public Board() {
         frame = new JFrame("Mahjong");
         backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();
@@ -119,7 +120,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         this.logic = new GameLogic(players); // or however you're constructing i
         logic.setupPlayers(players);
         setupBoard(mainPanel, logic.drawWall, logic.deadWall);
-
     }
     
     public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
@@ -261,6 +261,54 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         newPanel.add(tableArea, BorderLayout.CENTER);
         mainPanel.add(newPanel, BorderLayout.CENTER);
     }
+    
+    public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
+        newPanel = new JPanel(new GridLayout(1, 122));
+        newPanel.setOpaque(false);
+
+        // Create the discard and hands layout in the center
+        JPanel boardPanel = new JPanel(new BorderLayout());
+        boardPanel.setOpaque(false);
+
+        JPanel centerDiscards = new JPanel(new GridLayout(10, 10));
+        centerDiscards.setOpaque(false);
+        boardPanel.add(centerDiscards, BorderLayout.CENTER);
+
+        JPanel playerBottomHand = new JPanel(new GridLayout(1, 13));
+        JPanel playerTopHand = new JPanel(new GridLayout(1, 13));
+        JPanel playerLeftHand = new JPanel(new GridLayout(13, 1));
+        JPanel playerRightHand = new JPanel(new GridLayout(13, 1));
+
+        playerBottomHand.setOpaque(false);
+        playerTopHand.setOpaque(false);
+        playerLeftHand.setOpaque(false);
+        playerRightHand.setOpaque(false);
+
+        boardPanel.add(playerBottomHand, BorderLayout.SOUTH);
+        boardPanel.add(playerTopHand, BorderLayout.NORTH);
+        boardPanel.add(playerLeftHand, BorderLayout.WEST);
+        boardPanel.add(playerRightHand, BorderLayout.EAST);
+
+        // Add boardPanel to main
+        newPanel.add(boardPanel, BorderLayout.CENTER);
+
+        // Now create and show the draw wall on top
+        JPanel drawWallPanel = new JPanel(new GridLayout(1, drawW.size()));
+        drawWallPanel.setOpaque(false);
+
+        for (Piece piece : drawW) {
+            ImageIcon icon = new ImageIcon("imgs/" + piece.getImageFileName());
+            JLabel label = new JLabel(icon);
+            drawWallPanel.add(label);
+        }
+
+        // Add draw wall panel at top
+        newPanel.add(drawWallPanel, BorderLayout.NORTH);
+
+        // Finally add main panel to the Board
+        mainPanel.add(newPanel, BorderLayout.CENTER);
+    }
+
 
 
 
