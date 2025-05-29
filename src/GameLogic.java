@@ -9,8 +9,8 @@ public class GameLogic {
 //	private Board board;
 	private Tile[][] board;
 	
-	private List<Piece> deadWall;
-	private Stack<Piece> drawWall; // the walls to take pieces from
+	public List<Piece> deadWall;
+	public Stack<Piece> drawWall; // the walls to take pieces from
 	public static List<Player> players;
 	
 	private int currentPlayerIndex;
@@ -63,7 +63,7 @@ public class GameLogic {
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
 	            boolean isGreen = i >= 2 && i <= 8; // Optional logic
-	            allTiles.add(new Bamboo(String.valueOf(i), i, isGreen, row, col, "bamboo" + i + ".png"));
+	            allTiles.add(new Bamboo(String.valueOf(i), i, isGreen, row, col, "bamboo_" + i + ".png"));
 	        }
 	    }
 
@@ -71,7 +71,7 @@ public class GameLogic {
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
 	            boolean isRedDot = (i == 5); // Red dot on 5-dot (like red fives)
-	            allTiles.add(new Circles(String.valueOf(i), i, isRedDot, row, col, "dots" + i + ".png"));
+	            allTiles.add(new Circles(String.valueOf(i), i, isRedDot, row, col, "circle_" + i + ".png"));
 	        }
 	    }
 
