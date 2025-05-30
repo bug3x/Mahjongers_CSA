@@ -137,20 +137,21 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         newPanel.setOpaque(false);
         newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        Dimension tileSize = new Dimension(40, 60);
+        Dimension tileSize1 = new Dimension(40, 60);
+        Dimension tileSize2 = new Dimension(120, 60);
         int hGap = 0;
         int vGap = 0;
 
         // === CENTER DISCARD GRID ===
         JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
         centerDiscards.setOpaque(false);
-        centerDiscards.setPreferredSize(new Dimension(240, 180));
+        centerDiscards.setPreferredSize(new Dimension(120, 60));
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
                 Tile tile = new Tile(r, c);
                 tile.setOpaque(false);
                 tile.setContentAreaFilled(false);
-                tile.setPreferredSize(tileSize);
+                tile.setPreferredSize(tileSize1);
                 centerDiscards.add(tile);
             }
         }
@@ -211,27 +212,27 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             Tile b = new Tile(0, i);
             b.setOpaque(false);
             b.setContentAreaFilled(false);
-            b.setPreferredSize(tileSize);
+            b.setPreferredSize(tileSize1);
             playerBottom.add(b);
             bottomHandTiles.add(b);
 
             Tile t = new Tile(1, i);
             t.setOpaque(false);
             t.setContentAreaFilled(false);
-            t.setPreferredSize(tileSize);
+            t.setPreferredSize(tileSize1);
             playerTop.add(t);
 
             Tile l = new Tile(i, 0);
             l.setOpaque(false);
             l.setContentAreaFilled(false);
-            l.setPreferredSize(tileSize);
+            l.setPreferredSize(tileSize2);
             l.setAlignmentX(Component.CENTER_ALIGNMENT);
             playerLeft.add(l);
 
             Tile r = new Tile(i, 1);
             r.setOpaque(false);
             r.setContentAreaFilled(false);
-            r.setPreferredSize(tileSize);
+            r.setPreferredSize(tileSize2);
             r.setAlignmentX(Component.CENTER_ALIGNMENT);
             playerRight.add(r);
         }
