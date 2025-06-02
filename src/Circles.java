@@ -5,7 +5,7 @@ public class Circles extends Piece {
     private boolean isRedDot;
 
     public Circles(String value, int circleCount, boolean isRedDot, int row, int col, String imageFileName) {
-        super("Circles", value, row, col, imageFileName);
+        super();
         this.circleCount = circleCount;
         this.isRedDot = isRedDot;
     }

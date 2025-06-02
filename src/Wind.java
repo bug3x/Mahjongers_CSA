@@ -5,7 +5,7 @@ public class Wind extends Piece {
     private boolean isMajorWind;
 
     public Wind(String value, String direction, boolean isMajorWind, int row, int col, String imageFileName) {
-        super("Winds", value, row, col, imageFileName);
+        super();
         this.direction = direction;
         this.isMajorWind = isMajorWind;
     }

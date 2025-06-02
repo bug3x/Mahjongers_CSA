@@ -5,7 +5,7 @@ public class Dragon extends Piece {
     private boolean isPowerTile;
 
     public Dragon(String value, String color, boolean isPowerTile, int row, int col, String imageFileName) {
-        super("Dragons", value, row, col, imageFileName);
+        super();
         this.color = color;
         this.isPowerTile = isPowerTile;
     }

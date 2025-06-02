@@ -5,7 +5,7 @@ public class Number extends Piece {
     private boolean isEven;
 
     public Number(String value, int numberValue, boolean isEven, int row, int col, String imageFileName) {
-        super("Numbers", value, row, col, imageFileName);
+        super();
         this.numberValue = numberValue;
         this.isEven = isEven;
     }

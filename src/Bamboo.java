@@ -5,7 +5,7 @@ public class Bamboo extends Piece {
     private boolean isGreen;
 
     public Bamboo(String value, int bambooCount, boolean isGreen, int row, int col, String imageFileName) {
-        super("Bamboo", value, row, col, imageFileName);
+        super();
         this.bambooCount = bambooCount;
         this.isGreen = isGreen;
     }
