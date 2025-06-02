@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.JPanel;
+
 public class GameLogic {
 	// private List<Player> players;
 //	private Board board;
@@ -122,6 +124,10 @@ public class GameLogic {
 	public Tile[][] getBoard() {
 		return board;
 	}
+	
+	public void setDrawWall(Stack<Piece> drawWall) {
+        this.drawWall = drawWall;
+    }
 	
 	public static void main(String[] args) {
 	    List<Player> players = new ArrayList<>();

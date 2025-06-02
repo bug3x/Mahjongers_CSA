@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import test_scripts.BoardTest;
+import test_scripts.DrawPieceDisplayTest;
 
 public class Driver {
     public static void main(String[] args) throws InterruptedException {

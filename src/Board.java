@@ -45,7 +45,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     
     private GameLogic logic;
     private ArrayList<Player> players;
-    private List<Tile> bottomHandTiles = new ArrayList<>();
 
     public Board() {
         frame = new JFrame("Mahjong");
@@ -134,33 +133,37 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
 
     public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
+
+        // Create a transparent panel with border padding that holds the whole game board
         newPanel = new JPanel(new BorderLayout());
         newPanel.setOpaque(false);
         newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        Dimension baseTileSize = new Dimension(40, 60); // width x height for vertical tile
+        // Define the base size of tiles (used for all hands, unrotated is vertical)
+        Dimension baseTileSize = new Dimension(40, 60); 
         
-        int hGap = 0;
-        int vGap = 0;
+        int hGap = 0; // horizontal spacing between tiles in top/bottom hand
+        int vGap = 0; // vertical spacing between tiles in left/right hand
 
-     // === CENTER DISCARD GRID ===
+        // === CENTER DISCARD GRID ===
         int rows = 4, cols = 4;
         int spacing = 0;
-        Dimension centerTileSize = new Dimension(60, 45); // smaller size
+        Dimension centerTileSize = new Dimension(60, 45); // smaller tile size for discards
 
+        // Create 4x4 grid for center discards
         JPanel centerDiscards = new JPanel(new GridLayout(rows, cols, spacing, spacing));
         centerDiscards.setOpaque(false);
 
-        // Set exact preferred size: (tile width + gap) * cols, (tile height + gap) * rows
+        // Compute the total width and height of the discard grid
         int gridW = centerTileSize.width * cols + spacing * (cols - 1);
         int gridH = centerTileSize.height * rows + spacing * (rows - 1);
+        // Fix the discard panel's size so it doesn't stretch
         centerDiscards.setPreferredSize(new Dimension(gridW, gridH));
-
-        // Ensure layout respects size
         centerDiscards.setMaximumSize(new Dimension(gridW, gridH));
         centerDiscards.setMinimumSize(new Dimension(gridW, gridH));
         centerDiscards.setSize(new Dimension(gridW, gridH));
 
+        // Fill the discard grid with transparent placeholder Tile objects
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 Tile tile = new Tile(r, c);
@@ -174,25 +177,25 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             }
         }
 
-        
-        
-
         // === PLAYER HAND PANELS ===
-        JPanel playerBottom = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
+        // Create the four hand panels with appropriate layout direction
+        JPanel playerBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, hGap, 0));
+        JPanel playerTop = new JPanel(new FlowLayout(FlowLayout.CENTER, hGap, 0));
+        JPanel playerLeft = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, vGap));
+        JPanel playerRight = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, vGap));
 
-        JPanel playerTop = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, hGap, 0));
-        JPanel playerLeft = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, 0, vGap));
-        JPanel playerRight = new JPanel((LayoutManager) new FlowLayout(FlowLayout.CENTER, 0, vGap));
-
+        // Make hand panels transparent
         playerBottom.setOpaque(false);
         playerTop.setOpaque(false);
         playerLeft.setOpaque(false);
         playerRight.setOpaque(false);
 
+        // Left/right panels get vertical layout for stacking tiles
         playerLeft.setLayout(new BoxLayout(playerLeft, BoxLayout.Y_AXIS));
         playerRight.setLayout(new BoxLayout(playerRight, BoxLayout.Y_AXIS));
 
         // === WRAPPER PANELS ===
+        // Wrapper panels hold the hand panels and help with alignment and padding
         JPanel bottomWrapper = new JPanel(new BorderLayout());
         JPanel leftWrapper = new JPanel(new BorderLayout());
         JPanel rightWrapper = new JPanel(new BorderLayout());
@@ -201,16 +204,20 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         leftWrapper.setOpaque(false);
         rightWrapper.setOpaque(false);
 
+        // Set fixed sizes for wrapper panels to control layout space
         bottomWrapper.setPreferredSize(new Dimension(800, 120));
         leftWrapper.setPreferredSize(new Dimension(100, 600));
         rightWrapper.setPreferredSize(new Dimension(100, 600));
+
+        // Add top margin to bottom wrapper for spacing from the discard grid
         bottomWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         // === VERTICAL CENTERING FOR LEFT/RIGHT HANDS ===
+        // These inner panels vertically center left/right hands
         JPanel leftInner = new JPanel();
         leftInner.setOpaque(false);
         leftInner.setLayout(new BoxLayout(leftInner, BoxLayout.Y_AXIS));
-        leftInner.add(Box.createVerticalGlue());
+        leftInner.add(Box.createVerticalGlue());  // push content to center
         leftInner.add(playerLeft);
         leftInner.add(Box.createVerticalGlue());
         leftWrapper.add(leftInner, BorderLayout.CENTER);
@@ -223,59 +230,59 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         rightInner.add(Box.createVerticalGlue());
         rightWrapper.add(rightInner, BorderLayout.CENTER);
 
+        // Add bottom hand to its wrapper
         bottomWrapper.add(playerBottom, BorderLayout.CENTER);
 
         // === CREATE TILES ===
-        bottomHandTiles.clear();
         for (int i = 0; i < 13; i++) {
+            // Create bottom hand tile
             Tile b = new Tile(0, i);
             b.setOpaque(false);
             b.setContentAreaFilled(false);
             b.setPreferredSize(baseTileSize);
             playerBottom.add(b);
-            bottomHandTiles.add(b);
 
+            // Create top hand tile
             Tile t = new Tile(1, i);
             t.setOpaque(false);
             t.setContentAreaFilled(false);
             t.setPreferredSize(baseTileSize);
             playerTop.add(t);
-            
+
+            // Create left hand tile (rotated)
             Tile l = new Tile(i, 0);
-            l.setPreferredSize(baseTileSize);
             l.setOpaque(false);
             l.setContentAreaFilled(false);
             l.setPreferredSize(baseTileSize);
-//          l.setAlignmentX(Component.CENTER_ALIGNMENT);
-            l.setRotated(true); // Rotate 90 degrees
+            l.setRotated(true); // rotate 90 degrees to simulate horizontal tile
             playerLeft.add(l);
 
+            // Create right hand tile (rotated)
             Tile r = new Tile(i, 2);
-            r.setPreferredSize(baseTileSize);
             r.setOpaque(false);
             r.setContentAreaFilled(false);
             r.setPreferredSize(baseTileSize);
-//          r.setAlignmentX(Component.CENTER_ALIGNMENT);
-            r.setRotated(true); // Rotate 90 degrees
+            r.setRotated(true); // rotate 90 degrees to simulate horizontal tile
             playerRight.add(r);
         }
 
         // === TABLE AREA ===
+        // This panel contains all major board components: hands and discards
         JPanel tableArea = new JPanel(new BorderLayout());
         tableArea.setOpaque(false);
-        tableArea.add(centerDiscards, BorderLayout.CENTER);
-        tableArea.add(playerTop, BorderLayout.NORTH);
-        tableArea.add(bottomWrapper, BorderLayout.SOUTH);
-        tableArea.add(leftWrapper, BorderLayout.WEST);
-        tableArea.add(rightWrapper, BorderLayout.EAST);
+        tableArea.add(centerDiscards, BorderLayout.CENTER);  // center discard grid
+        tableArea.add(playerTop, BorderLayout.NORTH);         // top hand
+        tableArea.add(bottomWrapper, BorderLayout.SOUTH);     // bottom hand
+        tableArea.add(leftWrapper, BorderLayout.WEST);        // left hand
+        tableArea.add(rightWrapper, BorderLayout.EAST);       // right hand
 
         // === ASSEMBLE FULL BOARD ===
-        newPanel.add(tableArea, BorderLayout.CENTER);
+        newPanel.add(tableArea, BorderLayout.CENTER); // add table to the main panel
 
-        // === ADD TO MAIN ===
-        mainPanel.add(newPanel, BorderLayout.CENTER);
-
+        // === ADD TO MAIN PANEL ===
+        mainPanel.add(newPanel, BorderLayout.CENTER); // add everything to the input panel
     }
+
 
 
     private JPanel createPlayerHandsPanel(Stack<Piece> drawW) {
@@ -478,5 +485,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void actionPerformed(ActionEvent e) {}
+
+    public JPanel getCenterDiscardsPanel() {
+        return centerDiscards;
+    }
 }
 
