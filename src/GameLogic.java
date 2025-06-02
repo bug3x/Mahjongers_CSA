@@ -51,7 +51,7 @@ public class GameLogic {
 	    int row = -1, col = -1; // Placeholder for unplaced tiles
 
 	    // Winds: East, South, West, North (4 of each)
-	    String[] winds = {"East", "South", "West", "North"};
+	    String[] winds = {"dong", "nan", "xi", "bei"};
 	    for (String wind : winds) {
 	        for (int i = 0; i < 4; i++) {
 	            boolean isMajorWind = wind.equals("East"); // Set major wind logic
@@ -79,7 +79,7 @@ public class GameLogic {
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
 	            boolean isEven = i % 2 == 0;
-	            allTiles.add(new Number(String.valueOf(i), i, isEven, row, col, "characters" + i + ".png"));
+	            allTiles.add(new Number(String.valueOf(i), i, isEven, row, col, i + "_wan" + ".png"));
 	        }
 	    }
 

@@ -1,4 +1,4 @@
-package src;
+package test_scripts;
 import javax.swing.*;
 import java.awt.*;
 

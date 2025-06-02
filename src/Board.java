@@ -128,6 +128,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Build the visual board
         setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+        createPlayerHandsPanel(logic.drawWall);
     }
 
 
@@ -137,24 +138,42 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         newPanel.setOpaque(false);
         newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        Dimension tileSize1 = new Dimension(40, 60);
-        Dimension tileSize2 = new Dimension(120, 60);
+        Dimension baseTileSize = new Dimension(40, 60); // width x height for vertical tile
+        
         int hGap = 0;
         int vGap = 0;
 
-        // === CENTER DISCARD GRID ===
-        JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
+     // === CENTER DISCARD GRID ===
+        int rows = 4, cols = 4;
+        int spacing = 0;
+        Dimension centerTileSize = new Dimension(60, 45); // smaller size
+
+        JPanel centerDiscards = new JPanel(new GridLayout(rows, cols, spacing, spacing));
         centerDiscards.setOpaque(false);
-        centerDiscards.setPreferredSize(new Dimension(120, 60));
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
+
+        // Set exact preferred size: (tile width + gap) * cols, (tile height + gap) * rows
+        int gridW = centerTileSize.width * cols + spacing * (cols - 1);
+        int gridH = centerTileSize.height * rows + spacing * (rows - 1);
+        centerDiscards.setPreferredSize(new Dimension(gridW, gridH));
+
+        // Ensure layout respects size
+        centerDiscards.setMaximumSize(new Dimension(gridW, gridH));
+        centerDiscards.setMinimumSize(new Dimension(gridW, gridH));
+        centerDiscards.setSize(new Dimension(gridW, gridH));
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
                 Tile tile = new Tile(r, c);
                 tile.setOpaque(false);
                 tile.setContentAreaFilled(false);
-                tile.setPreferredSize(tileSize1);
+                tile.setPreferredSize(centerTileSize);
+                tile.setMaximumSize(centerTileSize);
+                tile.setMinimumSize(centerTileSize);
+                tile.setSize(centerTileSize);
                 centerDiscards.add(tile);
             }
         }
+
         
         
 
@@ -212,28 +231,32 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             Tile b = new Tile(0, i);
             b.setOpaque(false);
             b.setContentAreaFilled(false);
-            b.setPreferredSize(tileSize1);
+            b.setPreferredSize(baseTileSize);
             playerBottom.add(b);
             bottomHandTiles.add(b);
 
             Tile t = new Tile(1, i);
             t.setOpaque(false);
             t.setContentAreaFilled(false);
-            t.setPreferredSize(tileSize1);
+            t.setPreferredSize(baseTileSize);
             playerTop.add(t);
-
+            
             Tile l = new Tile(i, 0);
+            l.setPreferredSize(baseTileSize);
             l.setOpaque(false);
             l.setContentAreaFilled(false);
-            l.setPreferredSize(tileSize2);
-            l.setAlignmentX(Component.CENTER_ALIGNMENT);
+            l.setPreferredSize(baseTileSize);
+//          l.setAlignmentX(Component.CENTER_ALIGNMENT);
+            l.setRotated(true); // Rotate 90 degrees
             playerLeft.add(l);
 
-            Tile r = new Tile(i, 1);
+            Tile r = new Tile(i, 2);
+            r.setPreferredSize(baseTileSize);
             r.setOpaque(false);
             r.setContentAreaFilled(false);
-            r.setPreferredSize(tileSize2);
-            r.setAlignmentX(Component.CENTER_ALIGNMENT);
+            r.setPreferredSize(baseTileSize);
+//          r.setAlignmentX(Component.CENTER_ALIGNMENT);
+            r.setRotated(true); // Rotate 90 degrees
             playerRight.add(r);
         }
 
@@ -283,50 +306,50 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
 
-    private JPanel createWallPanels(Stack<Piece> drawW, List<Piece> deadW) {
-        JPanel topWall = new JPanel(new GridLayout(2, 19));
-        JPanel rightWall = new JPanel(new GridLayout(19, 2));
-        JPanel bottomWall = new JPanel(new GridLayout(2, 19));
-        JPanel leftWall = new JPanel(new GridLayout(19, 2));
-        for (JPanel panel : new JPanel[]{topWall, rightWall, bottomWall, leftWall})
-            panel.setOpaque(false);
-
-        int totalTiles = drawW.size() + deadW.size();
-        for (int i = 0; i < totalTiles; i++) {
-            Piece piece = (i < drawW.size()) ? drawW.get(i) : deadW.get(i - drawW.size());
-            JLabel label;
-
-            if (i < 38) {
-                label = new JLabel(rotateIcon(piece.getIcon(), 180));
-                topWall.add(label);
-            } else if (i < 76) {
-                label = new JLabel(rotateIcon(piece.getIcon(), 270));
-                rightWall.add(label);
-            } else if (i < 114) {
-                label = new JLabel(piece.getIcon());
-                bottomWall.add(label);
-            } else {
-                label = new JLabel(rotateIcon(piece.getIcon(), 90));
-                leftWall.add(label);
-            }
-        }
-
-        // Dora indicator (first tile of dead wall)
-        if (!deadW.isEmpty()) {
-            JLabel doraLabel = new JLabel(rotateIcon(deadW.get(0).getIcon(), 270));
-            doraLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-            rightWall.add(doraLabel); // Show on right wall
-        }
-
-        JPanel wallWrapper = new JPanel(new BorderLayout());
-        wallWrapper.setOpaque(false);
-        wallWrapper.add(topWall, BorderLayout.NORTH);
-        wallWrapper.add(rightWall, BorderLayout.EAST);
-        wallWrapper.add(bottomWall, BorderLayout.SOUTH);
-        wallWrapper.add(leftWall, BorderLayout.WEST);
-
-        return wallWrapper;
-    }
+//    private JPanel createWallPanels(Stack<Piece> drawW, List<Piece> deadW) {
+//        JPanel topWall = new JPanel(new GridLayout(2, 19));
+//        JPanel rightWall = new JPanel(new GridLayout(19, 2));
+//        JPanel bottomWall = new JPanel(new GridLayout(2, 19));
+//        JPanel leftWall = new JPanel(new GridLayout(19, 2));
+//        for (JPanel panel : new JPanel[]{topWall, rightWall, bottomWall, leftWall})
+//            panel.setOpaque(false);
+//
+//        int totalTiles = drawW.size() + deadW.size();
+//        for (int i = 0; i < totalTiles; i++) {
+//            Piece piece = (i < drawW.size()) ? drawW.get(i) : deadW.get(i - drawW.size());
+//            JLabel label;
+//
+//            if (i < 38) {
+//                label = new JLabel(rotateIcon(piece.getIcon(), 180));
+//                topWall.add(label);
+//            } else if (i < 72) {
+//                label = new JLabel(rotateIcon(piece.getIcon(), 270));
+//                rightWall.add(label);
+//            } else if (i < 110) {
+//                label = new JLabel(piece.getIcon());
+//                bottomWall.add(label);
+//            } else {
+//                label = new JLabel(rotateIcon(piece.getIcon(), 90));
+//                leftWall.add(label);
+//            }
+//        }
+//
+//        // Dora indicator (first tile of dead wall)
+//        if (!deadW.isEmpty()) {
+//            JLabel doraLabel = new JLabel(rotateIcon(deadW.get(0).getIcon(), 270));
+//            doraLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+//            rightWall.add(doraLabel); // Show on right wall
+//        }
+//
+//        JPanel wallWrapper = new JPanel(new BorderLayout());
+//        wallWrapper.setOpaque(false);
+//        wallWrapper.add(topWall, BorderLayout.NORTH);
+//        wallWrapper.add(rightWall, BorderLayout.EAST);
+//        wallWrapper.add(bottomWall, BorderLayout.SOUTH);
+//        wallWrapper.add(leftWall, BorderLayout.WEST);
+//
+//        return wallWrapper;
+//    }
 
 
     private ImageIcon rotateIcon(Icon icon, double angle) {
