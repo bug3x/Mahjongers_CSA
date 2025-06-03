@@ -48,6 +48,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private ArrayList<Player> players;
     private List<Tile> bottomHandTiles = new ArrayList<>();
     ArrayList<Piece> totems = new ArrayList<>();
+    private int currentPlayerIndex = 0;  // Track current player
 
     public Board() {
         frame = new JFrame("Mahjong");
@@ -115,8 +116,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         frame.setUndecorated(true);
         frame.setResizable(false);
         frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addMenus();
-
+        
         // Setup this panel
         this.setLayout(new BorderLayout());
         this.setOpaque(false); // Let background show
@@ -126,15 +126,46 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         mainPanel.setOpaque(false);
         this.add(mainPanel, BorderLayout.CENTER);
 
+        // Build the visual board first
+        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+        
+        // Add menus after board setup
+        addMenus();
+
         // Set this panel as the content pane and show frame
         frame.setContentPane(this);
         frame.setVisible(true);
-
-        // Build the visual board
-        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+        
+        // Force a repaint
+        frame.revalidate();
+        frame.repaint();
     }
 
+    public void switchToNextPlayer() {
+        currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+        updateDisplay();
+    }
 
+    private void updateDisplay() {
+        // Clear all hand displays
+        for (Tile tile : bottomHandTiles) {
+            tile.removePiece();
+        }
+
+        // Get the current player's hand and sort it
+        Player currentPlayer = players.get(currentPlayerIndex);
+        ArrayList<Piece> currentHand = currentPlayer.getHand();
+        sortPlayerHand(currentHand);
+
+        // Update bottom tiles to show current player's hand
+        for (int i = 0; i < bottomHandTiles.size() && i < currentHand.size(); i++) {
+            bottomHandTiles.get(i).setPiece(currentHand.get(i));
+        }
+
+        // Force repaint
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
 
     public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
         newPanel = new JPanel(new BorderLayout());
@@ -146,7 +177,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         int vGap = 2; // Spacing between left/right tiles
 
         // === CENTER DISCARD GRID ===
-        JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
+        centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
         centerDiscards.setOpaque(false);
         centerDiscards.setPreferredSize(new Dimension(120, 60));
         for (int r = 0; r < 4; r++) {
@@ -195,47 +226,62 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         leftWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         rightWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        bottomWrapper.add(playerBottom, BorderLayout.CENTER);
-        topWrapper.add(playerTop, BorderLayout.CENTER);
-        leftWrapper.add(playerLeft, BorderLayout.CENTER);
-        rightWrapper.add(playerRight, BorderLayout.CENTER);
-
-        // === CREATE TILES ===
+        // === CREATE TILES WITH ACTUAL PIECES ===
         bottomHandTiles.clear();
+        
+        // Get the current player's hand (bottom) and sort it
+        ArrayList<Piece> currentHand = players.get(currentPlayerIndex).getHand();
+        sortPlayerHand(currentHand);
+
+        // Add tiles for each player's hand
         for (int i = 0; i < 13; i++) {
-            // Bottom player
+            // Bottom player (current player)
             Tile b = new Tile(0, i);
+            if (i < currentHand.size()) {
+                b.setPiece(currentHand.get(i));
+            }
             b.setOpaque(false);
             b.setContentAreaFilled(false);
             b.setPreferredSize(tileSize);
+            b.addMouseListener(this);  // Add mouse listener for interaction
             playerBottom.add(b);
             bottomHandTiles.add(b);
 
-            // Top player
+            // Top player (hidden)
             Tile t = new Tile(1, i);
             t.setOpaque(false);
             t.setContentAreaFilled(false);
             t.setPreferredSize(tileSize);
+            t.setPiece(createBlankPiece("top"));
             playerTop.add(t);
 
-            // Left player
+            // Left player (hidden)
             Tile l = new Tile(i, 0);
             l.setOpaque(false);
             l.setContentAreaFilled(false);
             l.setPreferredSize(tileSize);
-            if (l.getIcon() != null)
-                l.setIcon(rotateIcon(l.getIcon(), -90)); // rotate -90°
+            l.setPiece(createBlankPiece("left"));
+            if (l.getIcon() != null) {
+                l.setIcon(rotateIcon(l.getIcon(), -90));
+            }
             playerLeft.add(l);
 
-            // Right player
+            // Right player (hidden)
             Tile r = new Tile(i, 1);
             r.setOpaque(false);
             r.setContentAreaFilled(false);
             r.setPreferredSize(tileSize);
-            if (r.getIcon() != null)
-                r.setIcon(rotateIcon(r.getIcon(), 90)); // rotate +90°
+            r.setPiece(createBlankPiece("right"));
+            if (r.getIcon() != null) {
+                r.setIcon(rotateIcon(r.getIcon(), 90));
+            }
             playerRight.add(r);
         }
+
+        bottomWrapper.add(playerBottom, BorderLayout.CENTER);
+        topWrapper.add(playerTop, BorderLayout.CENTER);
+        leftWrapper.add(playerLeft, BorderLayout.CENTER);
+        rightWrapper.add(playerRight, BorderLayout.CENTER);
 
         // === TABLE AREA ===
         JPanel tableArea = new JPanel(new BorderLayout());
@@ -248,13 +294,59 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // === ASSEMBLE FULL BOARD ===
         newPanel.add(tableArea, BorderLayout.CENTER);
-
-        // === ADD TO MAIN ===
+        
+        // Add the newPanel to mainPanel
         mainPanel.add(newPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
+    private Piece createBlankPiece(String side) {
+        // Create a piece with the appropriate side image
+        String sideImage;
+        switch(side) {
+            case "left":
+                sideImage = "side4.png";  // Left side
+                break;
+            case "right":
+                sideImage = "side2.png";  // Right side
+                break;
+            default:
+                sideImage = "blank.png";  // Top/default
+                break;
+        }
+        return new BlankPiece(-1, -1, sideImage);
+    }
 
-
+    private void sortPlayerHand(ArrayList<Piece> hand) {
+        // Sort the hand based on type and value
+        hand.sort((p1, p2) -> {
+            // Define type order: Numbers -> Circles -> Bamboo -> Winds -> Dragons
+            String[] typeOrder = {"Number", "Circle", "Bamboo", "Wind", "Dragon"};
+            int type1Index = java.util.Arrays.asList(typeOrder).indexOf(p1.getType());
+            int type2Index = java.util.Arrays.asList(typeOrder).indexOf(p2.getType());
+            
+            if (type1Index != type2Index) {
+                return type1Index - type2Index;
+            }
+            
+            // If same type, sort by value
+            if (p1.getType().equals("Wind")) {
+                // Sort winds: East, South, West, North
+                String[] windOrder = {"East", "South", "West", "North"};
+                return java.util.Arrays.asList(windOrder).indexOf(p1.getValue()) - 
+                       java.util.Arrays.asList(windOrder).indexOf(p2.getValue());
+            } else if (p1.getType().equals("Dragon")) {
+                // Sort dragons: Red, Green, White
+                String[] dragonOrder = {"Red", "Green", "White"};
+                return java.util.Arrays.asList(dragonOrder).indexOf(p1.getValue()) - 
+                       java.util.Arrays.asList(dragonOrder).indexOf(p2.getValue());
+            } else {
+                // For numbered tiles (Numbers, Circles, Bamboo)
+                return Integer.parseInt(p1.getValue()) - Integer.parseInt(p2.getValue());
+            }
+        });
+    }
 
     private JPanel createPlayerHandsPanel(Stack<Piece> drawW) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -453,7 +545,29 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
     // Required methods, stubbed
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        if (e.getSource() instanceof Tile) {
+            Tile clickedTile = (Tile) e.getSource();
+            if (clickedTile.hasPiece()) {
+                // Handle tile click (discard)
+                Piece piece = clickedTile.getPiece();
+                clickedTile.removePiece();
+                
+                // Add to discard pile
+                logic.getDiscards().add(piece);
+                updateDiscardPanel();
+                
+                // Draw new tile
+                if (!logic.drawWall.isEmpty()) {
+                    Piece newPiece = logic.drawWall.pop();
+                    clickedTile.setPiece(newPiece);
+                }
+                
+                // Switch to next player
+                switchToNextPlayer();
+            }
+        }
+    }
     public void mousePressed(MouseEvent e) {}
     public void mouseReleased(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}

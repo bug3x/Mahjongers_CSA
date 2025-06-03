@@ -19,27 +19,53 @@ public class GameLogic {
 //	private boolean pongable, chowable, kongable;
 //	private boolean riichi;
 	
+	private ArrayList<Piece> discards;
+	
 	public GameLogic(List<Player> players) {
-	    board = new Tile[8][8];
 	    this.players = players;
-
-	    for (int i = 0; i < board.length; i++) {
-	        for (int j = 0; j < board[0].length; j++) {
-	            
-	        }
-	    }
-
+	    this.discards = new ArrayList<>();  // Initialize discards list
 	    setupWalls(players);
-	    // Remove setupPlayers from here — do it *after* adding players
 	}
 
 	
 	public void setupPlayers(List<Player> players) {
 	    this.players = players;
+	    // Make sure drawWall is properly shuffled
+	    java.util.Collections.shuffle(drawWall);
+	    
+	    // Deal 13 tiles to each player
 	    for (Player p : players) {
 	        for (int i = 0; i < 13; i++) {
-	            p.addToHand(drawWall.pop()); // you wanna randomize the wall with the 144 tiles
+	            if (!drawWall.isEmpty()) {
+	                Piece piece = drawWall.pop();
+	                System.out.println("Dealing " + piece.toString() + " to " + p.getName());
+	                p.addToHand(piece);
+	            }
 	        }
+	        // Sort the hand after dealing
+	        java.util.Collections.sort(p.getHand(), (p1, p2) -> {
+	            // Define type order: Numbers -> Circles -> Bamboo -> Winds -> Dragons
+	            String[] typeOrder = {"Number", "Circle", "Bamboo", "Wind", "Dragon"};
+	            int type1Index = java.util.Arrays.asList(typeOrder).indexOf(p1.getType());
+	            int type2Index = java.util.Arrays.asList(typeOrder).indexOf(p2.getType());
+	            
+	            if (type1Index != type2Index) {
+	                return type1Index - type2Index;
+	            }
+	            
+	            // If same type, sort by value
+	            if (p1.getType().equals("Wind")) {
+	                String[] windOrder = {"East", "South", "West", "North"};
+	                return java.util.Arrays.asList(windOrder).indexOf(p1.getValue()) - 
+	                       java.util.Arrays.asList(windOrder).indexOf(p2.getValue());
+	            } else if (p1.getType().equals("Dragon")) {
+	                String[] dragonOrder = {"Red", "Green", "White"};
+	                return java.util.Arrays.asList(dragonOrder).indexOf(p1.getValue()) - 
+	                       java.util.Arrays.asList(dragonOrder).indexOf(p2.getValue());
+	            } else {
+	                return Integer.parseInt(p1.getValue()) - Integer.parseInt(p2.getValue());
+	            }
+	        });
 	    }
 	}
 	
@@ -52,17 +78,20 @@ public class GameLogic {
 
 	    // Winds: East, South, West, North (4 of each)
 	    String[] winds = {"East", "South", "West", "North"};
-	    for (String wind : winds) {
-	        for (int i = 0; i < 4; i++) {
-	            boolean isMajorWind = wind.equals("East"); // Set major wind logic
-	            allTiles.add(new Wind(wind, wind, isMajorWind, row, col, wind.toLowerCase() + ".png"));
+	    String[] windFiles = {"dong.png", "nan.png", "xi.png", "bei.png"};
+	    for (int i = 0; i < winds.length; i++) {
+	        String wind = winds[i];
+	        String file = windFiles[i];
+	        for (int j = 0; j < 4; j++) {
+	            boolean isMajorWind = wind.equals("East");
+	            allTiles.add(new Wind(wind, wind, isMajorWind, row, col, file));
 	        }
 	    }
 
 	    // Bamboo: 1–9, 4 of each
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
-	            boolean isGreen = i >= 2 && i <= 8; // Optional logic
+	            boolean isGreen = i >= 2 && i <= 8;
 	            allTiles.add(new Bamboo(String.valueOf(i), i, isGreen, row, col, "bamboo_" + i + ".png"));
 	        }
 	    }
@@ -70,25 +99,28 @@ public class GameLogic {
 	    // Circles (Dots): 1–9, 4 of each
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
-	            boolean isRedDot = (i == 5); // Red dot on 5-dot (like red fives)
+	            boolean isRedDot = (i == 5);
 	            allTiles.add(new Circles(String.valueOf(i), i, isRedDot, row, col, "circle_" + i + ".png"));
 	        }
 	    }
 
-	    // Numbers: 1–9 (assuming it's a Characters suit), 4 of each
+	    // Numbers (Characters): 1–9, 4 of each
 	    for (int i = 1; i <= 9; i++) {
 	        for (int j = 0; j < 4; j++) {
 	            boolean isEven = i % 2 == 0;
-	            allTiles.add(new Number(String.valueOf(i), i, isEven, row, col, "characters" + i + ".png"));
+	            allTiles.add(new Number(String.valueOf(i), i, isEven, row, col, i + "_wan.png"));
 	        }
 	    }
 
 	    // Dragons: Red, Green, White — 4 of each
-	    String[] dragonColors = {"Red", "Green", "White"};
-	    for (String color : dragonColors) {
-	        for (int i = 0; i < 4; i++) {
-	            boolean isPowerTile = true; // All dragons are power tiles
-	            allTiles.add(new Dragon(color, color, isPowerTile, row, col, color.toLowerCase() + ".png"));
+	    String[] dragonNames = {"Red", "Green", "White"};
+	    String[] dragonFiles = {"zhong.png", "fa.png", "blank.png"};  // Update with correct white dragon image when available
+	    for (int i = 0; i < dragonNames.length; i++) {
+	        String color = dragonNames[i];
+	        String file = dragonFiles[i];
+	        for (int j = 0; j < 4; j++) {
+	            boolean isPowerTile = true;
+	            allTiles.add(new Dragon(color, color, isPowerTile, row, col, file));
 	        }
 	    }
 
@@ -137,8 +169,7 @@ public class GameLogic {
 
 
 	public ArrayList<Piece> getDiscards() {
-		// TODO Auto-generated method stub
-		return null;
+		return discards;
 	}
 
 
