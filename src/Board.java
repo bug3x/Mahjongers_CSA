@@ -115,8 +115,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         frame.setUndecorated(true);
         frame.setResizable(false);
         frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addMenus();
-
+        
         // Setup this panel
         this.setLayout(new BorderLayout());
         this.setOpaque(false); // Let background show
@@ -126,12 +125,19 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         mainPanel.setOpaque(false);
         this.add(mainPanel, BorderLayout.CENTER);
 
+        // Build the visual board first
+        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+        
+        // Add menus after board setup
+        addMenus();
+
         // Set this panel as the content pane and show frame
         frame.setContentPane(this);
         frame.setVisible(true);
-
-        // Build the visual board
-        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
+        
+        // Force a repaint
+        frame.revalidate();
+        frame.repaint();
     }
 
 
@@ -146,7 +152,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         int vGap = 2; // Spacing between left/right tiles
 
         // === CENTER DISCARD GRID ===
-        JPanel centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
+        centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
         centerDiscards.setOpaque(false);
         centerDiscards.setPreferredSize(new Dimension(120, 60));
         for (int r = 0; r < 4; r++) {
@@ -248,9 +254,11 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // === ASSEMBLE FULL BOARD ===
         newPanel.add(tableArea, BorderLayout.CENTER);
-
-        // === ADD TO MAIN ===
+        
+        // Add the newPanel to mainPanel
         mainPanel.add(newPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
 
@@ -460,5 +468,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public void mouseExited(MouseEvent e) {}
     public void actionPerformed(ActionEvent e) {}
 }
+
+
 
 
