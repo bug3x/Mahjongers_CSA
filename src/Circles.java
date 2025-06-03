@@ -1,18 +1,22 @@
 package src;
 
 public class Circles extends Piece {
-    private int circleCount;
     private boolean isRedDot;
 
-    public Circles(String value, int circleCount, boolean isRedDot, int row, int col, String imageFileName) {
+    public Circles(String value, int number, boolean isRedDot, int row, int col, String imageFileName) {
         super();
-        this.circleCount = circleCount;
+        this.type = "Circle";
+        this.value = value;
         this.isRedDot = isRedDot;
+        this.row = row;
+        this.col = col;
+        this.imageFileName = imageFileName;
+        setIcon(imageFileName);
     }
 
     @Override
     public void operation() {
-        System.out.println("Circle count: " + circleCount);
+        System.out.println("Circle value: " + value);
     }
 
     @Override

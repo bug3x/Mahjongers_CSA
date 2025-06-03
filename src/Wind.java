@@ -6,8 +6,14 @@ public class Wind extends Piece {
 
     public Wind(String value, String direction, boolean isMajorWind, int row, int col, String imageFileName) {
         super();
+        this.type = "Wind";
+        this.value = value;
         this.direction = direction;
         this.isMajorWind = isMajorWind;
+        this.row = row;
+        this.col = col;
+        this.imageFileName = imageFileName;
+        setIcon(imageFileName);
     }
 
     @Override

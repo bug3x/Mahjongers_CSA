@@ -3,8 +3,8 @@ package src;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.net.URL;
-
+import java.io.File;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public abstract class Piece {
@@ -17,7 +17,7 @@ public abstract class Piece {
     protected String imageFileName;
     double scaleWidth = 10.00;
     double scaleHeight = 10.00;
-    private Image forward;
+    private Image tileImage;
     int width, height;
 	int x, y;						//position of the object
     
@@ -25,57 +25,50 @@ public abstract class Piece {
     private AffineTransform tx;
 	
     public Piece() {
-    	forward 	= getImage("/imgs/"+"dong.png"); //load the image for Tree
-        setIcon(imageFileName);
-        
-        tx = AffineTransform.getTranslateInstance(0, 0);
+    	tx = AffineTransform.getTranslateInstance(0, 0);
         width = 100;
 		height = 100;
 		x = 10;
 		y = 10;
     }
     public void paint(Graphics g) {
-		//these are the 2 lines of code needed draw an image on the screen
 		Graphics2D g2 = (Graphics2D) g;
 		
-		
-		
 		init(x,y);
-		g.setColor(Color.RED);
-		g.drawRect(x, y, width, height);
 		
-
+		if (icon != null) {
+			icon.paintIcon(null, g, x, y);
+		}
 	}
 
-    private void setIcon(String fileName) {
-        ImageIcon rawIcon = new ImageIcon("imgs/" + fileName);
-        Image img = rawIcon.getImage();
-        this.icon = createScaledIcon(img, 80, 100);
+    protected void setIcon(String fileName) {
+        try {
+            File imgFile = new File("imgs/" + fileName);
+            if (imgFile.exists()) {
+                BufferedImage img = ImageIO.read(imgFile);
+                Image scaledImg = img.getScaledInstance(40, 60, Image.SCALE_SMOOTH);
+                this.icon = new ImageIcon(scaledImg);
+                System.out.println("Loaded image: " + fileName);
+            } else {
+                System.out.println("Image file not found: " + fileName);
+                // Set a default blank tile image
+                File blankFile = new File("imgs/blank.png");
+                if (blankFile.exists()) {
+                    BufferedImage img = ImageIO.read(blankFile);
+                    Image scaledImg = img.getScaledInstance(40, 60, Image.SCALE_SMOOTH);
+                    this.icon = new ImageIcon(scaledImg);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading image: " + fileName);
+            e.printStackTrace();
+        }
     }
 
-    private static ImageIcon createScaledIcon(Image img, int width, int height) {
-        Image scaledImage = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        BufferedImage buffered = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = buffered.createGraphics();
-        g2d.drawImage(scaledImage, 0, 0, null);
-        g2d.dispose();
-        return new ImageIcon(buffered);
-    }
     private void init(double a, double b) {
 		tx.setToTranslation(a, b);
 		tx.scale(scaleWidth, scaleHeight);
 	}
-    private Image getImage(String path) {
-		Image tempImage = null;
-		try {
-			URL imageURL = Piece.class.getResource(path);
-			tempImage = Toolkit.getDefaultToolkit().getImage(imageURL);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return tempImage;
-	}
-
 
     public abstract void operation();
     public abstract void operation2();
