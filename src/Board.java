@@ -49,6 +49,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private JPanel leftDiscards;
     private JPanel rightDiscards;
     
+    
     private GameLogic logic;
     private ArrayList<Player> players;
     private List<Tile> bottomHandTiles = new ArrayList<>();
@@ -61,10 +62,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Initialize player list
         players = new ArrayList<>();
-        players.add(new Player("Lil' John"));  // User
-        players.add(new Player("Bot 1"));
-        players.add(new Player("Bot 2"));
-        players.add(new Player("Bot 3"));
+        players.add(new Player("You"));  // User
+        players.add(new Player("Mr. Biatchin"));
+        players.add(new Player("Just_Do_It_Later"));
+        players.add(new Player("Mr. David"));
 
         // Game setup
         logic = new GameLogic(players);
@@ -89,17 +90,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         }
         discardPanel.revalidate();
         discardPanel.repaint();
-    }
-
-
- // Returns the last discarded piece
-    public Piece getLastDiscard(ArrayList<Piece> discard) {
-        return discard.get(discard.size() - 1);
-    }
-
-    // Removes last piece from discard pile
-    public void removeLastDiscard(ArrayList<Piece> discard) {
-        if (!discard.isEmpty()) discard.remove(discard.size() - 1);
     }
 
     // Draws a tile from wall and adds to player's hand
