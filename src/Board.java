@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
@@ -42,179 +43,150 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private Image backgroundImage;
     private JPanel mainPanel;
     private JPanel newPanel;
-    private JPanel centerDiscards;
+
+    private JPanel bottomDiscards;
+    private JPanel topDiscards;
+    private JPanel leftDiscards;
+    private JPanel rightDiscards;
+    
     
     private GameLogic logic;
     private ArrayList<Player> players;
     private List<Tile> bottomHandTiles = new ArrayList<>();
-    ArrayList<Piece> totems = new ArrayList<>();
+    ArrayList<Piece> pieces = new ArrayList<>();
     private int currentPlayerIndex = 0;  // Track current player
 
     public Board() {
         frame = new JFrame("Mahjong");
-        backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();
-        
-        //construct player list
-        players = new ArrayList<>();
-        players.add(new Player("Player"));
-        players.add(new Player("Bot 1"));
-        players.add(new Player("Bot 2"));
-        players.add(new Player("Bot 3"));
+        backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();  // Load background
 
+        // Initialize player list
+        players = new ArrayList<>();
+        players.add(new Player("You"));  // User
+        players.add(new Player("Mr. Biatchin"));
+        players.add(new Player("Just_Do_It_Later"));
+        players.add(new Player("Mr. David"));
+
+        // Game setup
         logic = new GameLogic(players);
         logic.setupPlayers(players);
-        
-        //setup gui
+
+        // Set up the GUI
         setup();
-        
-
     }
-    
-    public void addToDiscard(Piece p, ArrayList<Piece> discard) {
+
+    // Adds a piece to discard list and updates GUI
+    public void addToDiscard(Piece p, ArrayList<Piece> discard, JPanel discardPanel) {
         discard.add(p);
-        updateDiscardPanel(); // hypothetical method
+        updateDiscardPanel(discard, discardPanel);
     }
 
-    
-    // Then implement updateDiscardPanel():
-    private void updateDiscardPanel() {
-        centerDiscards.removeAll();
-     // In setupBoard(), after creating centerDiscards:
-        this.centerDiscards = centerDiscards;
-        ArrayList<Piece> discards = logic.getDiscards(); // Assume method exists
+    // Refreshes the discard panel with current discard pile
+    private void updateDiscardPanel(ArrayList<Piece> discards, JPanel discardPanel) {
+        discardPanel.removeAll();  // Clear old tiles
         for (Piece p : discards) {
-            JLabel label = new JLabel(p.getIcon());
-            centerDiscards.add(label);
+            JLabel label = new JLabel(p.getIcon());  // Create image label
+            discardPanel.add(label);
         }
-        centerDiscards.revalidate();
-        centerDiscards.repaint();
+        discardPanel.revalidate();
+        discardPanel.repaint();
     }
 
-
-	public Piece getLastDiscard(ArrayList<Piece> discard) {
-        return discard.get(discard.size() - 1);
-    }
-
-    public void removeLastDiscard(ArrayList<Piece> discard) {
-        if (!discard.isEmpty()) discard.remove(discard.size() - 1);
-    }
-    
+    // Draws a tile from wall and adds to player's hand
     public void displayDrawPiece(Player player) {
         if (!logic.drawWall.isEmpty()) {
-            Piece p = logic.drawWall.pop();
-            player.addToHand(p);
-            // update player panel and drawWallPanel
-//            updateDrawWallPanel();
-//            updatePlayerHand(player);
+            Piece p = logic.drawWall.pop();  // Take from wall
+            player.addToHand(p);             // Add to hand
         }
     }
     
+ // GUI frame and layout setup
     public void setup() {
-        // Setup frame
         frame.setSize(800, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setUndecorated(true);
         frame.setResizable(false);
         frame.getContentPane().setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Setup this panel
-        this.setLayout(new BorderLayout());
-        this.setOpaque(false); // Let background show
 
-        // Transparent main panel
+        this.setLayout(new BorderLayout());
+        this.setOpaque(false);
+
         mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(false);
         this.add(mainPanel, BorderLayout.CENTER);
 
-        // Build the visual board first
-        setupBoard(mainPanel, logic.drawWall, logic.deadWall);
-        
-        // Add menus after board setup
-        addMenus();
+        setupBoard(mainPanel, logic.drawWall, logic.deadWall);  // Build board layout
+        addMenus();  // DEBUG: This method is not defined — consider commenting out
 
-        // Set this panel as the content pane and show frame
         frame.setContentPane(this);
         frame.setVisible(true);
-        
-        // Force a repaint
+
         frame.revalidate();
         frame.repaint();
     }
 
+    // Rotate to next player's turn
     public void switchToNextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % 4;
-        updateDisplay();
+        updateDisplay();  // Refresh tile display
     }
 
+    // Refresh tiles based on current player's hand
     private void updateDisplay() {
-        // Clear all hand displays
         for (Tile tile : bottomHandTiles) {
             tile.removePiece();
         }
 
-        // Get the current player's hand and sort it
         Player currentPlayer = players.get(currentPlayerIndex);
         ArrayList<Piece> currentHand = currentPlayer.getHand();
         sortPlayerHand(currentHand);
 
-        // Update bottom tiles to show current player's hand
         for (int i = 0; i < bottomHandTiles.size() && i < currentHand.size(); i++) {
             bottomHandTiles.get(i).setPiece(currentHand.get(i));
         }
 
-        // Force repaint
         mainPanel.revalidate();
         mainPanel.repaint();
     }
 
+
+ // Build full game board layout with player hands and discards
     public void setupBoard(JPanel mainPanel, Stack<Piece> drawW, List<Piece> deadW) {
         newPanel = new JPanel(new BorderLayout());
         newPanel.setOpaque(false);
         newPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        Dimension tileSize = new Dimension(40, 60); // Unified tile size
-        int hGap = 4; // Spacing between top/bottom tiles
-        int vGap = 2; // Spacing between left/right tiles
+        Dimension tileSize = new Dimension(40, 60);
+        int hGap = 4;
+        int vGap = 2;
 
-        // === CENTER DISCARD GRID ===
-        centerDiscards = new JPanel(new GridLayout(4, 4, 2, 2));
-        centerDiscards.setOpaque(false);
-        centerDiscards.setPreferredSize(new Dimension(120, 60));
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
-                Tile tile = new Tile(r, c);
-                tile.setOpaque(false);
-                tile.setContentAreaFilled(false);
-                tile.setPreferredSize(tileSize);
-                centerDiscards.add(tile);
-            }
-        }
+        // Initialize discard panels
+        bottomDiscards = createDiscardPanel(2, 5);
+        topDiscards = createDiscardPanel(1, 5);
+        leftDiscards = createDiscardPanel(5, 1);
+        rightDiscards = createDiscardPanel(5, 1);
 
-        // === PLAYER HAND PANELS ===
+        // Create player hand areas
         JPanel playerBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, hGap, 0));
         JPanel playerTop = new JPanel(new FlowLayout(FlowLayout.CENTER, hGap, 0));
         JPanel playerLeft = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, vGap));
         JPanel playerRight = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, vGap));
 
-        playerBottom.setOpaque(false);
-        playerTop.setOpaque(false);
-        playerLeft.setOpaque(false);
-        playerRight.setOpaque(false);
+        for (JPanel panel : new JPanel[]{playerBottom, playerTop, playerLeft, playerRight})
+            panel.setOpaque(false);
 
         int verticalSpace = tileSize.height * 13 + vGap * 12;
         playerLeft.setPreferredSize(new Dimension(60, verticalSpace));
         playerRight.setPreferredSize(new Dimension(60, verticalSpace));
 
-        // === WRAPPER PANELS ===
+        // Wrappers for positioning
         JPanel bottomWrapper = new JPanel(new BorderLayout());
         JPanel topWrapper = new JPanel(new BorderLayout());
         JPanel leftWrapper = new JPanel(new BorderLayout());
         JPanel rightWrapper = new JPanel(new BorderLayout());
 
-        bottomWrapper.setOpaque(false);
-        topWrapper.setOpaque(false);
-        leftWrapper.setOpaque(false);
-        rightWrapper.setOpaque(false);
+        for (JPanel wrapper : new JPanel[]{bottomWrapper, topWrapper, leftWrapper, rightWrapper})
+            wrapper.setOpaque(false);
 
         bottomWrapper.setPreferredSize(new Dimension(800, 120));
         topWrapper.setPreferredSize(new Dimension(800, 100));
@@ -226,123 +198,116 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         leftWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         rightWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // === CREATE TILES WITH ACTUAL PIECES ===
+        // Generate player's starting hand
         bottomHandTiles.clear();
-        
-        // Get the current player's hand (bottom) and sort it
         ArrayList<Piece> currentHand = players.get(currentPlayerIndex).getHand();
         sortPlayerHand(currentHand);
 
-        // Add tiles for each player's hand
         for (int i = 0; i < 13; i++) {
-            // Bottom player (current player)
-            Tile b = new Tile(0, i);
-            if (i < currentHand.size()) {
-                b.setPiece(currentHand.get(i));
-            }
+            Tile b = new Tile(0, i);  // Bottom player
+            if (i < currentHand.size()) b.setPiece(currentHand.get(i));
             b.setOpaque(false);
             b.setContentAreaFilled(false);
             b.setPreferredSize(tileSize);
-            b.addMouseListener(this);  // Add mouse listener for interaction
+            b.addMouseListener(this);  // Interactivity
             playerBottom.add(b);
             bottomHandTiles.add(b);
 
-            // Top player (hidden)
-            Tile t = new Tile(1, i);
+            Tile t = new Tile(1, i);  // Top bot
             t.setOpaque(false);
             t.setContentAreaFilled(false);
             t.setPreferredSize(tileSize);
             t.setPiece(createBlankPiece("top"));
             playerTop.add(t);
 
-            // Left player (hidden)
-            Tile l = new Tile(i, 0);
+            Tile l = new Tile(i, 0);  // Left bot
             l.setOpaque(false);
             l.setContentAreaFilled(false);
             l.setPreferredSize(tileSize);
             l.setPiece(createBlankPiece("left"));
-            if (l.getIcon() != null) {
-                l.setIcon(rotateIcon(l.getIcon(), -90));
-            }
+            if (l.getIcon() != null) l.setIcon(rotateIcon(l.getIcon(), -90));
             playerLeft.add(l);
 
-            // Right player (hidden)
-            Tile r = new Tile(i, 1);
+            Tile r = new Tile(i, 1);  // Right bot
             r.setOpaque(false);
             r.setContentAreaFilled(false);
             r.setPreferredSize(tileSize);
             r.setPiece(createBlankPiece("right"));
-            if (r.getIcon() != null) {
-                r.setIcon(rotateIcon(r.getIcon(), 90));
-            }
+            if (r.getIcon() != null) r.setIcon(rotateIcon(r.getIcon(), 90));
             playerRight.add(r);
         }
 
+        // Assemble wrappers with hands and discards
         bottomWrapper.add(playerBottom, BorderLayout.CENTER);
-        topWrapper.add(playerTop, BorderLayout.CENTER);
-        leftWrapper.add(playerLeft, BorderLayout.CENTER);
-        rightWrapper.add(playerRight, BorderLayout.CENTER);
+        bottomWrapper.add(bottomDiscards, BorderLayout.NORTH);
 
-        // === TABLE AREA ===
+        topWrapper.add(playerTop, BorderLayout.CENTER);
+        topWrapper.add(topDiscards, BorderLayout.SOUTH);
+
+        leftWrapper.add(playerLeft, BorderLayout.CENTER);
+        leftWrapper.add(leftDiscards, BorderLayout.EAST);
+
+        rightWrapper.add(playerRight, BorderLayout.CENTER);
+        rightWrapper.add(rightDiscards, BorderLayout.WEST);
+
+        // Optional: Central discard zone
+        JPanel centralDiscards = new JPanel(new BorderLayout());
+        centralDiscards.setOpaque(false);
+        centralDiscards.add(topDiscards, BorderLayout.NORTH);
+        centralDiscards.add(bottomDiscards, BorderLayout.SOUTH);
+        centralDiscards.add(leftDiscards, BorderLayout.WEST);
+        centralDiscards.add(rightDiscards, BorderLayout.EAST);
+
         JPanel tableArea = new JPanel(new BorderLayout());
         tableArea.setOpaque(false);
-        tableArea.add(centerDiscards, BorderLayout.CENTER);
         tableArea.add(topWrapper, BorderLayout.NORTH);
         tableArea.add(bottomWrapper, BorderLayout.SOUTH);
         tableArea.add(leftWrapper, BorderLayout.WEST);
         tableArea.add(rightWrapper, BorderLayout.EAST);
+        tableArea.add(centralDiscards, BorderLayout.CENTER);  // Discards go in center
 
-        // === ASSEMBLE FULL BOARD ===
         newPanel.add(tableArea, BorderLayout.CENTER);
-        
-        // Add the newPanel to mainPanel
         mainPanel.add(newPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
     }
 
+    // Helper to make discard panels
+    private JPanel createDiscardPanel(int rows, int cols) {
+        JPanel panel = new JPanel(new GridLayout(rows, cols, 2, 2));
+        panel.setOpaque(false);
+        panel.setPreferredSize(new Dimension(cols * 30 + 10, rows * 60 + 10));
+        return panel;
+    }
+
+    // Creates a blank piece with back-face icon
     private Piece createBlankPiece(String side) {
-        // Create a piece with the appropriate side image
         String sideImage;
         switch(side) {
-            case "left":
-                sideImage = "side4.png";  // Left side
-                break;
-            case "right":
-                sideImage = "side2.png";  // Right side
-                break;
-            default:
-                sideImage = "blank.png";  // Top/default
-                break;
+            case "left": sideImage = "side4.png"; break;
+            case "right": sideImage = "side2.png"; break;
+            default: sideImage = "blank.png"; break;
         }
         return new BlankPiece(-1, -1, sideImage);
     }
 
+    // Sort hand by suit then value
     private void sortPlayerHand(ArrayList<Piece> hand) {
-        // Sort the hand based on type and value
         hand.sort((p1, p2) -> {
-            // Define type order: Numbers -> Circles -> Bamboo -> Winds -> Dragons
             String[] typeOrder = {"Number", "Circle", "Bamboo", "Wind", "Dragon"};
-            int type1Index = java.util.Arrays.asList(typeOrder).indexOf(p1.getType());
-            int type2Index = java.util.Arrays.asList(typeOrder).indexOf(p2.getType());
-            
-            if (type1Index != type2Index) {
-                return type1Index - type2Index;
-            }
-            
-            // If same type, sort by value
+            int type1Index = Arrays.asList(typeOrder).indexOf(p1.getType());
+            int type2Index = Arrays.asList(typeOrder).indexOf(p2.getType());
+            if (type1Index != type2Index) return type1Index - type2Index;
+
             if (p1.getType().equals("Wind")) {
-                // Sort winds: East, South, West, North
                 String[] windOrder = {"East", "South", "West", "North"};
-                return java.util.Arrays.asList(windOrder).indexOf(p1.getValue()) - 
-                       java.util.Arrays.asList(windOrder).indexOf(p2.getValue());
+                return Arrays.asList(windOrder).indexOf(p1.getValue()) -
+                       Arrays.asList(windOrder).indexOf(p2.getValue());
             } else if (p1.getType().equals("Dragon")) {
-                // Sort dragons: Red, Green, White
                 String[] dragonOrder = {"Red", "Green", "White"};
-                return java.util.Arrays.asList(dragonOrder).indexOf(p1.getValue()) - 
-                       java.util.Arrays.asList(dragonOrder).indexOf(p2.getValue());
+                return Arrays.asList(dragonOrder).indexOf(p1.getValue()) -
+                       Arrays.asList(dragonOrder).indexOf(p2.getValue());
             } else {
-                // For numbered tiles (Numbers, Circles, Bamboo)
                 return Integer.parseInt(p1.getValue()) - Integer.parseInt(p2.getValue());
             }
         });
@@ -422,6 +387,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
 
+ // Rotate image by angle and return icon
     private ImageIcon rotateIcon(Icon icon, double angle) {
         if (!(icon instanceof ImageIcon)) return null;
         ImageIcon ii = (ImageIcon) icon;
@@ -451,8 +417,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             g.setColor(Color.RED);
             g.drawString("Image not found", 20, 20);
         }
-        for (Piece totem : totems) {
-	        totem.paint(g); // Assuming `Totem` has a paint method
+        for (Piece piece : pieces) {
+	        piece.paint(g); // Assuming `Totem` has a paint method
         }
     }
     
@@ -545,7 +511,31 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
     // Required methods, stubbed
+    @Override
     public void mouseClicked(MouseEvent e) {
+        if (e.getSource() instanceof Tile clickedTile && clickedTile.hasPiece()) {
+            Piece piece = clickedTile.getPiece();
+            clickedTile.removePiece();
+
+            // Get current player and their discard list + panel
+            Player currentPlayer = players.get(currentPlayerIndex);
+            ArrayList<Piece> discard = currentPlayer.getDiscards();
+
+            JPanel discardPanel = switch (currentPlayerIndex) {
+                case 0 -> bottomDiscards;
+                case 1 -> rightDiscards;
+                case 2 -> topDiscards;
+                case 3 -> leftDiscards;
+                default -> throw new IllegalStateException("Invalid player index");
+            };
+
+            // Add to the appropriate discard panel
+            addToDiscard(piece, discard, discardPanel);
+
+            // Draw new tile
+            if (!logic.drawWall.isEmpty()) {
+                Piece newPiece = logic.drawWall.pop();
+                clickedTile.setPiece(newPiece);
         if (e.getSource() instanceof Tile tile) {
             if (tile.hasPiece()) {
                 Piece piece = tile.getPiece();
@@ -571,6 +561,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
                 // Switch to next player
                 switchToNextPlayer();
             }
+
+            // Advance to next player
+            switchToNextPlayer();
         }
     }
     public void mousePressed(MouseEvent e) {}

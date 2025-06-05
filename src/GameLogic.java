@@ -13,18 +13,31 @@ public class GameLogic {
 	public Stack<Piece> drawWall; // the walls to take pieces from
 	public static List<Player> players;
 	
+	private Piece[] meld3;
+	private Piece[] meld4;
+	
 	private int currentPlayerIndex;
 	private boolean yaku;
 	private boolean win;
-//	private boolean pongable, chowable, kongable;
 //	private boolean riichi;
 	
 	private ArrayList<Piece> discards;
+	
+	public ArrayList<Piece> discard1;
+    public ArrayList<Piece> discard2;
+    public ArrayList<Piece> discard3;
+    public ArrayList<Piece> discard4;
 	
 	public GameLogic(List<Player> players) {
 	    this.players = players;
 	    this.discards = new ArrayList<>();  // Initialize discards list
 	    setupWalls(players);
+	    
+	 // Setup discard piles
+        discard1 = new ArrayList<>();
+        discard2 = new ArrayList<>();
+        discard3 = new ArrayList<>();
+        discard4 = new ArrayList<>();
 	}
 
 	
@@ -139,8 +152,85 @@ public class GameLogic {
 	    System.out.println("  Draw wall size: " + drawWall.size());   // should be 122
 	    System.out.println("  Dead wall size: " + deadWall.size());   // should be 14
 	}
+	
+	public void discardPiece(Piece piece, int playerIndex) {
+        switch (playerIndex) {
+            case 0:
+                addToDiscard(piece, discard1, bottomDiscards);
+                break;
+            case 1:
+                addToDiscard(piece, discard2, rightDiscards);
+                break;
+            case 2:
+                addToDiscard(piece, discard3, topDiscards);
+                break;
+            case 3:
+                addToDiscard(piece, discard4, leftDiscards);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid player index: " + playerIndex);
+        }
+    }
 
 
+ // Returns the last discarded piece
+    public Piece getLastDiscard(ArrayList<Piece> discard) {
+        return discard.get(discard.size() - 1);
+    }
+
+    // Removes last piece from discard pile
+    public void removeLastDiscard(ArrayList<Piece> discard) {
+        if (!discard.isEmpty()) discard.remove(discard.size() - 1);
+    }
+
+	// meld callouts
+	public Piece[] callPong(Tile a, Tile b, boolean take) {
+		Piece[] set3 = new Piece[3];
+		System.out.println("pong!");
+		Piece temp = a.getPiece();
+		
+		if(temp != null) {
+			temp.setValue(temp.getValue()+1); // ex. value = "1", "1" + 1 = 11
+		}
+		
+		Piece temp2 = b.getPiece();
+		if(temp2 != null) {
+			temp2.setValue(temp.getValue()+1);
+		}
+		
+		if(!take) {
+			a.setPiece(b.getPiece());
+		}
+		else {
+			a.setPiece(null);
+		}
+		
+		b.setPiece(temp);
+		return set3;
+	}
+	
+	// same as pong, but only to take from the previous player's discard
+	public Piece[] callChow() {
+		Piece[] set3 = new Piece[3];
+		System.out.println("chow!");
+		return set3;
+	}
+	
+	// similar to pong and chow but to create a set of 4
+	public Piece[] callKong() {
+		Piece[] set4 = new Piece[4];
+		System.out.println("kong!");
+		return set4;
+	}
+	
+	// a method to declare riichi, returns nothing.
+	public void callRiichi() {
+		System.out.println("RIICHI!!!");
+		return;
+	}
+	public Meld callPong() {
+		return null;
+	}
 	
 	public void noYaku() {
 		System.out.println("NO Yaku.");
@@ -153,6 +243,22 @@ public class GameLogic {
 
 	public Tile[][] getBoard() {
 		return board;
+	}
+	
+	public Piece[] getMeld3(){
+		return meld3;
+	}
+	
+	public void setMeld3(Piece[] meld3){
+		this.meld3 = meld3;
+	}
+	
+	public Piece[] getMeld4(){
+		return meld4;
+	}
+	
+	public void setMeld4(Piece[] meld4){
+		this.meld4 = meld4;
 	}
 	
 	public static void main(String[] args) {
@@ -171,6 +277,23 @@ public class GameLogic {
 	public ArrayList<Piece> getDiscards() {
 		return discards;
 	}
+	
+	public ArrayList<Piece> getDiscardForPlayer(int playerIndex) {
+	    switch (playerIndex) {
+	        case 0: return discard1;
+	        case 1: return discard2;
+	        case 2: return discard3;
+	        case 3: return discard4;
+	        default: throw new IllegalArgumentException("Invalid player index: " + playerIndex);
+	    }
+	}
+
+	public Piece getLastDiscardForPlayer(int playerIndex) {
+	    ArrayList<Piece> discard = getDiscardForPlayer(playerIndex);
+	    if (!discard.isEmpty()) return discard.get(discard.size() - 1);
+	    return null;
+	}
+
 
 
 }
