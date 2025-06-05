@@ -536,6 +536,30 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             if (!logic.drawWall.isEmpty()) {
                 Piece newPiece = logic.drawWall.pop();
                 clickedTile.setPiece(newPiece);
+        if (e.getSource() instanceof Tile tile) {
+            if (tile.hasPiece()) {
+                Piece piece = tile.getPiece();
+                tile.removePiece();
+
+                // Remove the piece from the player's hand
+                Player currentPlayer = players.get(currentPlayerIndex);
+                currentPlayer.getHand().remove(piece);
+
+                // Add to discard pile
+                logic.getDiscards().add(piece);
+                updateDiscardPanel();
+
+                // Draw a new tile and add it to end of hand
+                if (!logic.drawWall.isEmpty()) {
+                    Piece newPiece = logic.drawWall.pop();
+                    currentPlayer.addToHand(newPiece);
+                }
+
+                // Refresh the display
+                updateDisplay();
+
+                // Switch to next player
+                switchToNextPlayer();
             }
 
             // Advance to next player
