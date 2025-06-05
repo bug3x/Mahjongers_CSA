@@ -405,23 +405,29 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
     public void discardPiece(Piece piece, int playerIndex) {
-        switch (playerIndex) {
-            case 0:
-                addToDiscard(piece, GameLogic.discard1, bottomDiscards);
-                break;
-            case 1:
-                addToDiscard(piece, GameLogic.discard2, rightDiscards);
-                break;
-            case 2:
-                addToDiscard(piece, GameLogic.discard3, topDiscards);
-                break;
-            case 3:
-                addToDiscard(piece, GameLogic.discard4, leftDiscards);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid player index: " + playerIndex);
+        @SuppressWarnings("unchecked")
+		List<Piece>[] gameDiscards = new List[]{
+            logic.getDiscardForPlayer(0),
+            logic.getDiscardForPlayer(1),
+            logic.getDiscardForPlayer(2),
+            logic.getDiscardForPlayer(3),
+        };
+
+        JPanel[] boardDiscards = new JPanel[]{
+            bottomDiscards,
+            rightDiscards,
+            topDiscards,
+            leftDiscards
+        };
+
+        if (playerIndex < 0 || playerIndex >= gameDiscards.length) {
+            throw new IllegalArgumentException("Invalid player index: " + playerIndex);
         }
+
+        addToDiscard(piece, (ArrayList<Piece>) gameDiscards[playerIndex], boardDiscards[playerIndex]);
     }
+
+
 
 
 
@@ -558,9 +564,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             // Optional: update the Tile (if it represents the hand visually)
             clickedTile.setPiece(newPiece); // Only if clickedTile is reused in GUI
         }
-
-//        updateDiscardPanel(); // GUI update
-        updateDisplay();      // GUI update
+        
+        updateDisplay();      // 
         switchToNextPlayer(); // Rotate turn
     }
 
