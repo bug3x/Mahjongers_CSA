@@ -23,10 +23,10 @@ public class GameLogic {
 	
 	private ArrayList<Piece> discards;
 	
-	public ArrayList<Piece> discard1;
-    public ArrayList<Piece> discard2;
-    public ArrayList<Piece> discard3;
-    public ArrayList<Piece> discard4;
+	public static ArrayList<Piece> discard1;
+    public static ArrayList<Piece> discard2;
+    public static ArrayList<Piece> discard3;
+    public static ArrayList<Piece> discard4;
 	
 	public GameLogic(List<Player> players) {
 	    this.players = players;
@@ -152,25 +152,6 @@ public class GameLogic {
 	    System.out.println("  Draw wall size: " + drawWall.size());   // should be 122
 	    System.out.println("  Dead wall size: " + deadWall.size());   // should be 14
 	}
-	
-	public void discardPiece(Piece piece, int playerIndex) {
-        switch (playerIndex) {
-            case 0:
-                addToDiscard(piece, discard1, bottomDiscards);
-                break;
-            case 1:
-                addToDiscard(piece, discard2, rightDiscards);
-                break;
-            case 2:
-                addToDiscard(piece, discard3, topDiscards);
-                break;
-            case 3:
-                addToDiscard(piece, discard4, leftDiscards);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid player index: " + playerIndex);
-        }
-    }
 
 
  // Returns the last discarded piece

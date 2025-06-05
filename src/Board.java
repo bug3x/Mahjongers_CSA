@@ -404,7 +404,24 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         return new ImageIcon(rotated);
     }
 
-
+    public void discardPiece(Piece piece, int playerIndex) {
+        switch (playerIndex) {
+            case 0:
+                addToDiscard(piece, GameLogic.discard1, bottomDiscards);
+                break;
+            case 1:
+                addToDiscard(piece, GameLogic.discard2, rightDiscards);
+                break;
+            case 2:
+                addToDiscard(piece, GameLogic.discard3, topDiscards);
+                break;
+            case 3:
+                addToDiscard(piece, GameLogic.discard4, leftDiscards);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid player index: " + playerIndex);
+        }
+    }
 
 
 
@@ -510,62 +527,43 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         new Board();
     }
 
-    // Required methods, stubbed
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getSource() instanceof Tile clickedTile && clickedTile.hasPiece()) {
-            Piece piece = clickedTile.getPiece();
-            clickedTile.removePiece();
+        if (!(e.getSource() instanceof Tile clickedTile)) return;
+        if (!clickedTile.hasPiece()) return;
 
-            // Get current player and their discard list + panel
-            Player currentPlayer = players.get(currentPlayerIndex);
-            ArrayList<Piece> discard = currentPlayer.getDiscards();
+        Piece piece = clickedTile.getPiece();
+        clickedTile.removePiece();
 
-            JPanel discardPanel = switch (currentPlayerIndex) {
-                case 0 -> bottomDiscards;
-                case 1 -> rightDiscards;
-                case 2 -> topDiscards;
-                case 3 -> leftDiscards;
-                default -> throw new IllegalStateException("Invalid player index");
-            };
+        Player currentPlayer = players.get(currentPlayerIndex);
+        currentPlayer.getHand().remove(piece); // Remove from hand
+        currentPlayer.getDiscards().add(piece); // Add to player's discard list
+        logic.getDiscards().add(piece); // Global discard pool
 
-            // Add to the appropriate discard panel
-            addToDiscard(piece, discard, discardPanel);
+        // Add to discard panel
+        JPanel discardPanel = switch (currentPlayerIndex) {
+            case 0 -> bottomDiscards;
+            case 1 -> rightDiscards;
+            case 2 -> topDiscards;
+            case 3 -> leftDiscards;
+            default -> throw new IllegalStateException("Invalid player index");
+        };
+        addToDiscard(piece, currentPlayer.getDiscards(), discardPanel);
 
-            // Draw new tile
-            if (!logic.drawWall.isEmpty()) {
-                Piece newPiece = logic.drawWall.pop();
-                clickedTile.setPiece(newPiece);
-        if (e.getSource() instanceof Tile tile) {
-            if (tile.hasPiece()) {
-                Piece piece = tile.getPiece();
-                tile.removePiece();
+        // Draw a new tile
+        if (!logic.drawWall.isEmpty()) {
+            Piece newPiece = logic.drawWall.pop();
+            currentPlayer.addToHand(newPiece);
 
-                // Remove the piece from the player's hand
-                Player currentPlayer = players.get(currentPlayerIndex);
-                currentPlayer.getHand().remove(piece);
-
-                // Add to discard pile
-                logic.getDiscards().add(piece);
-                updateDiscardPanel();
-
-                // Draw a new tile and add it to end of hand
-                if (!logic.drawWall.isEmpty()) {
-                    Piece newPiece = logic.drawWall.pop();
-                    currentPlayer.addToHand(newPiece);
-                }
-
-                // Refresh the display
-                updateDisplay();
-
-                // Switch to next player
-                switchToNextPlayer();
-            }
-
-            // Advance to next player
-            switchToNextPlayer();
+            // Optional: update the Tile (if it represents the hand visually)
+            clickedTile.setPiece(newPiece); // Only if clickedTile is reused in GUI
         }
+
+//        updateDiscardPanel(); // GUI update
+        updateDisplay();      // GUI update
+        switchToNextPlayer(); // Rotate turn
     }
+
     public void mousePressed(MouseEvent e) {}
     public void mouseReleased(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}
