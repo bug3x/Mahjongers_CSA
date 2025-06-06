@@ -22,7 +22,7 @@ public class Driver {
         // Print output
         System.out.println("\n\n\n\n\n\nHeya, I'm " + playerName + "! The first player will be playing as me! " + playerPhrase);
         System.out.println("\nHey, I'm Mr. Biatchin! The second player will be playing as me! Let's stir up a really, really biatchin game!");
-        System.out.println("\nHello, I'm Just_Do_It_Later! The third player will be playing as me! Win now, lose later!");
+        System.out.println("\nHello, I'm Just_Do_It_Later! dThe third player will be playing as me! Win now, lose later!");
         System.out.println("\nHi, I'm Mr. David! The fourth player will be playing as me! Don't forget to push your code!");
 
         scanner.close();

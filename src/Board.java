@@ -37,6 +37,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.Timer;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 
 public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
@@ -56,6 +59,16 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     ArrayList<Piece> pieces = new ArrayList<>();
     private int currentPlayerIndex = 0;  // Track current player
 
+    private JPanel meldPanel; // Floating meld button panel
+    private Timer meldTimer; // Timer for auto-pass
+    private JDialog gifOverlay; // Overlay for meld GIFs
+
+    private boolean isBotTurn = false;
+
+    private JLabel[] turnLabels = new JLabel[4]; // One for each player position
+    private Timer botCountdownTimer; // For bot turn countdown
+    private int botCountdownSeconds; // For bot turn countdown
+
     public Board() {
         frame = new JFrame("Mahjong");
         backgroundImage = new ImageIcon("imgs/mahjongboard1.png").getImage();  // Load background
@@ -63,9 +76,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         // Initialize player list
         players = new ArrayList<>();
         players.add(new Player("You"));  // User
-        players.add(new Player("Mr. Biatchin"));
-        players.add(new Player("Just_Do_It_Later"));
-        players.add(new Player("Mr. David"));
+        players.add(new Player("Mr. Biatchin"));  // Right
+        players.add(new Player("Just_Do_It_Later"));  // Top
+        players.add(new Player("Mr. David"));  // Left
 
         // Game setup
         logic = new GameLogic(players);
@@ -73,6 +86,40 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Set up the GUI
         setup();
+
+        // === MELD UI LOGIC ===
+        meldPanel = new JPanel();
+        meldPanel.setOpaque(false);
+        meldPanel.setVisible(false);
+        meldPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5)); // Smaller gap
+        this.add(meldPanel, BorderLayout.CENTER);
+
+        // Initialize turn labels
+        for (int i = 0; i < 4; i++) {
+            turnLabels[i] = new JLabel("", JLabel.CENTER);
+            turnLabels[i].setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 24));
+            turnLabels[i].setForeground(Color.YELLOW);
+            turnLabels[i].setOpaque(false);
+            turnLabels[i].setVisible(false);
+        }
+
+        // Add turn labels in correct positions
+        this.setLayout(new BorderLayout());
+        this.add(turnLabels[0], BorderLayout.SOUTH);  // You (bottom)
+        this.add(turnLabels[1], BorderLayout.EAST);   // Mr. Biatchin (right)
+        this.add(turnLabels[2], BorderLayout.NORTH);  // Just_Do_It_Later (top)
+        this.add(turnLabels[3], BorderLayout.WEST);   // Mr. David (left)
+    }
+
+    // Helper to create a smaller icon for left/right discards
+    private ImageIcon getSmallIcon(Piece piece) {
+        Icon origIcon = piece.getIcon();
+        if (origIcon instanceof ImageIcon) {
+            Image img = ((ImageIcon) origIcon).getImage();
+            Image scaled = img.getScaledInstance(30, 40, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        }
+        return null;
     }
 
     // Adds a piece to discard list and updates GUI
@@ -84,12 +131,36 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     // Refreshes the discard panel with current discard pile
     private void updateDiscardPanel(ArrayList<Piece> discards, JPanel discardPanel) {
         discardPanel.removeAll();  // Clear old tiles
+        boolean isHorizontal = (discardPanel == topDiscards || discardPanel == bottomDiscards);
+        boolean isLeftOrRight = (discardPanel == leftDiscards || discardPanel == rightDiscards);
+        int wrap = 7;
+        int gap = 1;
+        if (isHorizontal || isLeftOrRight) {
+            int major = isHorizontal ? (int) Math.ceil(discards.size() / (double)wrap) : wrap;
+            int minor = isHorizontal ? wrap : (int) Math.ceil(discards.size() / (double)wrap);
+            discardPanel.setLayout(new GridLayout(major, minor, gap, gap));
+        }
         for (Piece p : discards) {
-            JLabel label = new JLabel(p.getIcon());  // Create image label
+            JLabel label = new JLabel(getSmallIcon(p));
             discardPanel.add(label);
         }
         discardPanel.revalidate();
         discardPanel.repaint();
+    }
+
+    // Helper to make discard panels with orientation
+    private JPanel createDiscardPanel(String orientation) {
+        JPanel panel;
+        int gap = 1;
+        if ("horizontal".equals(orientation)) {
+            panel = new JPanel(new GridLayout(1, 7, gap, gap));
+        } else {
+            panel = new JPanel(new GridLayout(7, 1, gap, gap));
+        }
+        panel.setOpaque(false);
+        // Preferred size is dynamic, so keep it minimal
+        panel.setPreferredSize(null);
+        return panel;
     }
 
     // Draws a tile from wall and adds to player's hand
@@ -128,6 +199,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     // Rotate to next player's turn
     public void switchToNextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+        updateTurnLabel();
         updateDisplay();  // Refresh tile display
     }
 
@@ -135,16 +207,14 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private void updateDisplay() {
         for (Tile tile : bottomHandTiles) {
             tile.removePiece();
+            tile.setEnabled(currentPlayerIndex == 0); // Only enable if it's the human's turn
         }
-
         Player currentPlayer = players.get(currentPlayerIndex);
         ArrayList<Piece> currentHand = currentPlayer.getHand();
         sortPlayerHand(currentHand);
-
         for (int i = 0; i < bottomHandTiles.size() && i < currentHand.size(); i++) {
             bottomHandTiles.get(i).setPiece(currentHand.get(i));
         }
-
         mainPanel.revalidate();
         mainPanel.repaint();
     }
@@ -161,10 +231,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         int vGap = 2;
 
         // Initialize discard panels
-        bottomDiscards = createDiscardPanel(2, 5);
-        topDiscards = createDiscardPanel(1, 5);
-        leftDiscards = createDiscardPanel(5, 1);
-        rightDiscards = createDiscardPanel(5, 1);
+        bottomDiscards = createDiscardPanel("horizontal");
+        topDiscards = createDiscardPanel("horizontal");
+        leftDiscards = createDiscardPanel("vertical");
+        rightDiscards = createDiscardPanel("vertical");
 
         // Create player hand areas
         JPanel playerBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, hGap, 0));
@@ -197,6 +267,15 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         topWrapper.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
         leftWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         rightWrapper.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        // --- NEW: Create FlowLayout wrappers for top/bottom discard panels ---
+        JPanel bottomDiscardFlow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        bottomDiscardFlow.setOpaque(false);
+        bottomDiscardFlow.add(bottomDiscards);
+        JPanel topDiscardFlow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        topDiscardFlow.setOpaque(false);
+        topDiscardFlow.add(topDiscards);
+        // --- END NEW ---
 
         // Generate player's starting hand
         bottomHandTiles.clear();
@@ -239,10 +318,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Assemble wrappers with hands and discards
         bottomWrapper.add(playerBottom, BorderLayout.CENTER);
-        bottomWrapper.add(bottomDiscards, BorderLayout.NORTH);
+        bottomWrapper.add(bottomDiscardFlow, BorderLayout.NORTH);
 
         topWrapper.add(playerTop, BorderLayout.CENTER);
-        topWrapper.add(topDiscards, BorderLayout.SOUTH);
+        topWrapper.add(topDiscardFlow, BorderLayout.SOUTH);
 
         leftWrapper.add(playerLeft, BorderLayout.CENTER);
         leftWrapper.add(leftDiscards, BorderLayout.EAST);
@@ -270,14 +349,6 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         mainPanel.add(newPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
-    }
-
-    // Helper to make discard panels
-    private JPanel createDiscardPanel(int rows, int cols) {
-        JPanel panel = new JPanel(new GridLayout(rows, cols, 2, 2));
-        panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(cols * 30 + 10, rows * 60 + 10));
-        return panel;
     }
 
     // Creates a blank piece with back-face icon
@@ -535,6 +606,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (currentPlayerIndex != 0) return; // Only allow if it's the human's turn
         if (!(e.getSource() instanceof Tile clickedTile)) return;
         if (!clickedTile.hasPiece()) return;
 
@@ -543,10 +615,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         Player currentPlayer = players.get(currentPlayerIndex);
         currentPlayer.getHand().remove(piece); // Remove from hand
-        currentPlayer.getDiscards().add(piece); // Add to player's discard list
         logic.getDiscards().add(piece); // Global discard pool
 
-        // Add to discard panel
+        // Add to discard panel and player's discard list
         JPanel discardPanel = switch (currentPlayerIndex) {
             case 0 -> bottomDiscards;
             case 1 -> rightDiscards;
@@ -556,17 +627,24 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         };
         addToDiscard(piece, currentPlayer.getDiscards(), discardPanel);
 
+        // Check for melds for player 0 after every discard
+        checkMeldsAfterDiscard(piece);
+
         // Draw a new tile
         if (!logic.drawWall.isEmpty()) {
             Piece newPiece = logic.drawWall.pop();
             currentPlayer.addToHand(newPiece);
-
-            // Optional: update the Tile (if it represents the hand visually)
-            clickedTile.setPiece(newPiece); // Only if clickedTile is reused in GUI
+            clickedTile.setPiece(newPiece);
         }
-        
-        updateDisplay();      // 
-        switchToNextPlayer(); // Rotate turn
+
+        // Move to next player's turn
+        currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+        updateTurnLabel();
+
+        // If next player is a bot, start bot turns
+        if (currentPlayerIndex != 0) {
+            processBotTurns();
+        }
     }
 
     public void mousePressed(MouseEvent e) {}
@@ -574,6 +652,264 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void actionPerformed(ActionEvent e) {}
+
+    // --- Helper to show meld buttons ---
+    private void showMeldButtons(java.util.List<String> melds) {
+        meldPanel.removeAll();
+        for (String meld : melds) {
+            String imgFile = switch (meld) {
+                case "chow" -> "chi.png";
+                case "pong" -> "Pon.png";
+                case "kong" -> "Kong.png";
+                case "riichi" -> "Riichi.png";
+                case "tsumo" -> "Tsumo.png";
+                case "ron" -> "ron.png";
+                default -> null;
+            };
+            if (imgFile != null) {
+                ImageIcon icon = new ImageIcon("imgs/" + imgFile);
+                Image img = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+                JButton btn = new JButton(new ImageIcon(img));
+                btn.setFocusPainted(false);
+                btn.setContentAreaFilled(false);
+                btn.setBorderPainted(false);
+                btn.setOpaque(false);
+                btn.setToolTipText(meld.substring(0,1).toUpperCase() + meld.substring(1));
+                btn.addActionListener(e -> {
+                    meldPanel.setVisible(false);
+                    if (meldTimer != null) meldTimer.stop();
+                    performMeld(meld);
+                });
+                meldPanel.add(btn);
+            }
+        }
+        meldPanel.setVisible(true);
+        meldPanel.revalidate();
+        meldPanel.repaint();
+        // Start 5s timer for auto-pass
+        if (meldTimer != null) meldTimer.stop();
+        meldTimer = new Timer(5000, e -> {
+            meldPanel.setVisible(false);
+        });
+        meldTimer.setRepeats(false);
+        meldTimer.start();
+    }
+
+    // --- Helper to perform meld action ---
+    private void performMeld(String meld) {
+        // TODO: Implement meld logic (call GameLogic methods, update hand/discards, etc.)
+        // For now, just show GIF overlay for riichi, tsumo, ron
+        if (meld.equals("riichi")) {
+            showGifOverlay("imgs/mahjong-all-day-riichi.gif");
+        } else if (meld.equals("tsumo")) {
+            showGifOverlay("imgs/tsumo-mahjong.gif");
+        } else if (meld.equals("ron")) {
+            showGifOverlay("imgs/yakuza-ron.gif");
+        }
+        // Hide meld panel after action
+        meldPanel.setVisible(false);
+    }
+
+    // --- Helper to show GIF overlay ---
+    private void showGifOverlay(String gifPath) {
+        if (gifOverlay != null) gifOverlay.dispose();
+        gifOverlay = new JDialog(frame, true);
+        gifOverlay.setUndecorated(true);
+        JLabel gifLabel = new JLabel(new ImageIcon(gifPath));
+        gifOverlay.getContentPane().add(gifLabel);
+        gifOverlay.pack();
+        gifOverlay.setLocationRelativeTo(frame);
+        // Timer to close overlay after GIF duration (3s default)
+        Timer closeTimer = new Timer(3000, e -> gifOverlay.dispose());
+        closeTimer.setRepeats(false);
+        closeTimer.start();
+        gifOverlay.setVisible(true);
+    }
+
+    // --- After every discard, check for melds for player 0 ---
+    private void checkMeldsAfterDiscard(Piece lastDiscard) {
+        java.util.List<String> melds = new java.util.ArrayList<>();
+        // Only for player 0 (bottom)
+        Player player = players.get(0);
+        int playerIndex = 0;
+        // Find who discarded last
+        int lastDiscarder = (currentPlayerIndex + 3) % 4;
+        // Only allow Chow if last discard was from player 3 (right of player 0)
+        if (Meld.canChow(player, lastDiscard) && lastDiscarder == 3) melds.add("chow");
+        if (Meld.canPong(player, lastDiscard)) melds.add("pong");
+        if (Meld.canKong(player, lastDiscard)) melds.add("kong");
+        if (Meld.canRiichi(player)) melds.add("riichi");
+        // TODO: Add tsumo/ron logic if needed
+        if (!melds.isEmpty()) {
+            showMeldButtons(melds);
+        } else {
+            meldPanel.setVisible(false);
+        }
+    }
+
+    // --- After human player's turn, process bot turns ---
+    private void processBotTurns() {
+        isBotTurn = true;
+        processNextBotTurn(currentPlayerIndex);
+    }
+
+    private void processNextBotTurn(int botIndex) {
+        if (botIndex == 0) {
+            isBotTurn = false;
+            updateTurnLabel();
+            return;
+        }
+
+        Player bot = players.get(botIndex);
+        turnLabels[botIndex].setText(bot.getName() + "'s Turn (5s)");
+        for (int i = 0; i < 4; i++) turnLabels[i].setVisible(i == botIndex);
+        botCountdownSeconds = 5;
+
+        if (botCountdownTimer != null) botCountdownTimer.stop();
+        botCountdownTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                botCountdownSeconds--;
+                if (botCountdownSeconds > 0) {
+                    turnLabels[botIndex].setText(bot.getName() + "'s Turn (" + botCountdownSeconds + "s)");
+                } else {
+                    botCountdownTimer.stop();
+                    doBotAction(bot, botIndex);
+                }
+            }
+        });
+        botCountdownTimer.setRepeats(true);
+        botCountdownTimer.start();
+    }
+
+    private void doBotAction(Player bot, int botIndex) {
+        // Draw a tile if needed
+        if (bot.getHand().size() < 14 && !logic.drawWall.isEmpty()) {
+            Piece drawn = logic.drawWall.pop();
+            bot.addToHand(drawn);
+        }
+
+        // Check for win (Tsumo)
+        if (checkBotWin(bot, botIndex)) {
+            showGifOverlay("imgs/tsumo-mahjong.gif");
+            return;
+        }
+
+        // Check for melds on last discard
+        Piece lastDiscard = logic.getDiscards().isEmpty() ? null : logic.getDiscards().get(logic.getDiscards().size() - 1);
+        if (lastDiscard != null) {
+            if (tryBotMeld(bot, botIndex, lastDiscard)) {
+                // If meld performed, continue with next bot
+                currentPlayerIndex = (botIndex + 1) % 4;
+                processNextBotTurn(currentPlayerIndex);
+                return;
+            }
+        }
+
+        // Discard a tile
+        Piece discard = chooseBotDiscard(bot);
+        if (discard != null) {
+            bot.getHand().remove(discard);
+            logic.getDiscards().add(discard);
+            JPanel discardPanel = switch (botIndex) {
+                case 1 -> rightDiscards;
+                case 2 -> topDiscards;
+                case 3 -> leftDiscards;
+                default -> null;
+            };
+            if (discardPanel != null) addToDiscard(discard, bot.getDiscards(), discardPanel);
+            checkRonOnDiscard(discard, botIndex);
+        }
+
+        // Move to next player
+        currentPlayerIndex = (botIndex + 1) % 4;
+        processNextBotTurn(currentPlayerIndex);
+    }
+
+    // --- Bot discard logic: keep pairs, discard singletons ---
+    private Piece chooseBotDiscard(Player bot) {
+        java.util.Map<String, Integer> tileCounts = new java.util.HashMap<>();
+        for (Piece p : bot.getHand()) {
+            String key = p.getType() + ":" + p.getValue();
+            tileCounts.put(key, tileCounts.getOrDefault(key, 0) + 1);
+        }
+        // Prefer to discard singletons
+        for (Piece p : bot.getHand()) {
+            String key = p.getType() + ":" + p.getValue();
+            if (tileCounts.get(key) == 1) return p;
+        }
+        // Otherwise, discard any tile
+        return bot.getHand().isEmpty() ? null : bot.getHand().get(0);
+    }
+
+    // --- Bot meld logic ---
+    private boolean tryBotMeld(Player bot, int botIndex, Piece lastDiscard) {
+        // Try Ron (win on discard)
+        if (checkBotRon(bot, botIndex, lastDiscard)) {
+            showGifOverlay("imgs/yakuza-ron.gif");
+            currentPlayerIndex = botIndex;
+            processBotTurns();
+            return true;
+        }
+        // Try Kong
+        if (Meld.canKong(bot, lastDiscard)) {
+            // TODO: Implement Kong meld logic for bot
+            currentPlayerIndex = botIndex;
+            processBotTurns();
+            return true;
+        }
+        // Try Pong
+        if (Meld.canPong(bot, lastDiscard)) {
+            // TODO: Implement Pong meld logic for bot
+            currentPlayerIndex = botIndex;
+            processBotTurns();
+            return true;
+        }
+        // Try Chow (only for player to the left of discarder)
+        int discarder = (botIndex + 3) % 4;
+        if (Meld.canChow(bot, lastDiscard) && discarder == ((botIndex + 3) % 4)) {
+            // TODO: Implement Chow meld logic for bot
+            currentPlayerIndex = botIndex;
+            processBotTurns();
+            return true;
+        }
+        return false;
+    }
+
+    // --- Add stub for checkBotRon ---
+    private boolean checkBotRon(Player bot, int botIndex, Piece lastDiscard) {
+        // TODO: Implement real Ron detection logic
+        return false;
+    }
+
+    // --- Bot win check (Tsumo) ---
+    private boolean checkBotWin(Player bot, int botIndex) {
+        // TODO: Implement real win detection logic
+        // For now, just return false
+        return false;
+    }
+
+    // --- Ron check for all players except discarder ---
+    private void checkRonOnDiscard(Piece discard, int discarderIndex) {
+        for (int i = 0; i < 4; i++) {
+            if (i == discarderIndex) continue;
+            Player p = players.get(i);
+            // TODO: Implement Ron check for each player
+        }
+    }
+
+    private void updateTurnLabel() {
+        // Hide all labels first
+        for (int i = 0; i < 4; i++) {
+            turnLabels[i].setVisible(false);
+        }
+
+        // Show only the current player's label
+        String name = players.get(currentPlayerIndex).getName();
+        String labelText = (currentPlayerIndex == 0) ? "Your Turn" : name + "'s Turn";
+        turnLabels[currentPlayerIndex].setText(labelText);
+        turnLabels[currentPlayerIndex].setVisible(true);
+    }
 }
 
 
