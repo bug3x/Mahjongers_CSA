@@ -229,6 +229,10 @@ public class GameLogic {
     public ArrayList<Piece> getDiscards() {
         return discards;
     }
+    
+    public List<Player> getPlayers(){
+    	return players;
+    }
 
     public ArrayList<Piece> getDiscardForPlayer(int playerIndex) {
         switch (playerIndex) {

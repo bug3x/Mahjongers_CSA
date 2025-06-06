@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Stack;
 
 import javax.swing.BorderFactory;
@@ -69,6 +70,61 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
         // Game setup
         logic = new GameLogic(players);
+        
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Command line interface active. Enter a command (pong, chow, kong, riichi, or exit):");
+
+        while (true) {
+            System.out.print("> ");
+            String command = scanner.nextLine().trim().toLowerCase();
+
+            if (command.equals("exit")) break;
+
+            switch (command) {
+                case "pong":
+                case "chow":
+                case "kong":
+                    System.out.print("Enter player index (0–3): ");
+                    int playerIndex = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Enter discard owner index (0–3): ");
+                    int discardOwnerIndex = Integer.parseInt(scanner.nextLine());
+
+                    System.out.println("Enter indexes of tiles in your hand (0–12) to use:");
+                    System.out.print("Tile A index: ");
+                    int aIndex = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Tile B index: ");
+                    int bIndex = Integer.parseInt(scanner.nextLine());
+                    Tile a = new Tile(0, 0); // dummy position
+                    Tile b = new Tile(0, 1);
+                    a.setPiece(logic.getPlayers().get(playerIndex).getHand().get(aIndex));
+                    b.setPiece(logic.getPlayers().get(playerIndex).getHand().get(bIndex));
+
+                    if (command.equals("pong")) {
+                        Piece[] pong = logic.callPong(a, b, playerIndex, discardOwnerIndex);
+                        if (pong != null) System.out.println("PONG successful.");
+                    } else if (command.equals("chow")) {
+                        Piece[] chow = logic.callChow(a, b, playerIndex, discardOwnerIndex);
+                        if (chow != null) System.out.println("CHOW successful.");
+                    } else {
+                        System.out.print("Tile C index: ");
+                        int cIndex = Integer.parseInt(scanner.nextLine());
+                        Tile c = new Tile(0, 2);
+                        c.setPiece(logic.getPlayers().get(playerIndex).getHand().get(cIndex));
+                        Piece[] kong = logic.callKong(a, b, c, playerIndex, discardOwnerIndex);
+                        if (kong != null) System.out.println("KONG successful.");
+                    }
+                    break;
+
+                case "riichi":
+                    logic.callRiichi();
+                    break;
+
+                default:
+                    System.out.println("Unknown command.");
+                    break;
+            }
+        }
+
         logic.setupPlayers(players);
 
         // Set up the GUI
