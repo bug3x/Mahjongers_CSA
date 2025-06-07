@@ -630,6 +630,36 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         });
 		menu.add(menuItem);
 
+	private void showRulebookDialog() {
+   		 JTextArea textArea = new JTextArea(20, 40);
+   		 textArea.setText("""
+      			--- Mahjong Game Rulebook ---
+
+      			1. Each player starts with 13 tiles.
+        		2. Players take turns drawing and discarding tiles.
+        		3. Goal: form four melds and a pair.
+        		4. Melds: Chow (sequence), Pong (three of a kind), Kong (four of a kind).
+        		5. Special declarations: Riichi, Tsumo, Ron.
+
+        		[Insert your own house rules or additional explanations here.]
+
+        		Note: This rulebook is editable by modifying the textArea.setText() content.
+        		""");
+    		textArea.setEditable(false);
+    		textArea.setLineWrap(true);
+    		textArea.setWrapStyleWord(true);
+
+    			JScrollPane scrollPane = new JScrollPane(textArea);
+    			JOptionPane.showMessageDialog(frame, scrollPane, "Game Rulebook", JOptionPane.INFORMATION_MESSAGE);
+}
+
+	    	menuItem = new JMenuItem("Rulebook");
+		menuItem.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+        		showRulebookDialog();
+   		 }
+			});
+			menu.add(menuItem);
 		menuItem = new JMenuItem("Undo",
 		                         new ImageIcon(""));
 		menuItem.setMnemonic(KeyEvent.VK_B);
