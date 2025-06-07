@@ -1,8 +1,25 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Meld {
+
+    private String type;
+    private List<Piece> pieces;
+
+    public Meld(String type, List<Piece> pieces) {
+        this.type = type;
+        this.pieces = new ArrayList<>(pieces);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public List<Piece> getPieces() {
+        return new ArrayList<>(pieces);
+    }
 
     // Return player index if someone can call Pong on lastDiscard, else -1
     public static int pongable(ArrayList<Player> players, Piece lastDiscard) {
@@ -89,5 +106,12 @@ public class Meld {
 
     public static boolean canRiichi(Player player) {
         return player.getHand().size() == 13;
+    }
+
+    public static boolean canRon(Player player, Piece lastDiscard) {
+        // TODO: Implement real Ron detection logic based on player's hand and last discard.
+        // This is a complex check in Mahjong (e.g., waiting for a specific tile to complete a winning hand).
+        // For now, always return false as a placeholder.
+        return false;
     }
 }
