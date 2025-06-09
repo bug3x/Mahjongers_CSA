@@ -675,10 +675,10 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         		DECLARATIONS:
         		- Riichi: Declared when you are one tile from winning (Tenpai) with a closed hand. Costs 1000 points.
         		- Tsumo: Win by self-draw.
-        		- Ron: Win using another player’s discard.
+        		- Ron: Win using another player's discard.
 
         		FURITEN RULE:
-        		- You cannot Ron (win off a discard) if you’ve previously ignored a winning discard.
+        		- You cannot Ron (win off a discard) if you've previously ignored a winning discard.
 
         		SCORING NOTES (Simplified):
         		- Common Yaku (scoring hands):
@@ -691,10 +691,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         		- Dead wall holds 14 tiles (including Dora).
 
         		MISC:
-        		- Cannot declare Chi on another player’s discard unless they are on your left.
+        		- Cannot declare Chi on another player's discard unless they are on your left.
         		- After a Kan, player draws from dead wall.
 
-        		[End of Rulebook]
         		""");
     			textArea.setEditable(false);
     			textArea.setLineWrap(true);
