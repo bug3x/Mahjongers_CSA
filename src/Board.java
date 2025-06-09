@@ -37,6 +37,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.Timer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -553,15 +555,15 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             }
         });
 		menu.add(menuItem);
-
+			
 		menuItem = new JMenuItem("Rulebook");
 		menuItem.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-        		showRulebookDialog();
-    		}
-			});
+		    public void actionPerformed(ActionEvent e) {
+		        showRulebookDialog();
+		    }
+		});
 		menu.add(menuItem);
-	    
+		
 		menuItem = new JMenuItem("Undo",
 		                         new ImageIcon(""));
 		menuItem.setMnemonic(KeyEvent.VK_B);
@@ -607,29 +609,71 @@ public class Board extends JPanel implements MouseListener, ActionListener {
  		menu.add(menuItem);
 		frame.setJMenuBar(menuBar);
 	}
+    
+    
+    private void showRulebookDialog() {
+        JTextArea textArea = new JTextArea(20, 40);
+        textArea.setText("""
+        		--- Mahjong Rulebook ---
 
-	private void showRulebookDialog() {
-  	  JTextArea textArea = new JTextArea(20, 40);
-    		textArea.setText("""
-        		--- Mahjong Game Rulebook ---
+        		OBJECTIVE:
+        		Form a complete hand of 14 tiles, consisting of:
+        		- 4 melds (sets of 3 tiles: chow, pong, or kong)
+        		- 1 pair (2 identical tiles)
+        		You win by declaring Tsumo (self-draw) or Ron (opponent's discard).
 
-       			 1. Each player starts with 13 tiles.
-       			 2. Players take turns drawing and discarding tiles.
-       			 3. Goal: form four melds and a pair.
-       			 4. Melds: Chow (sequence), Pong (three of a kind), Kong (four of a kind).
-       			 5. Special declarations: Riichi, Tsumo, Ron.
+        		TILE TYPES:
+        		- Suited Tiles: Characters (Man), Circles (Pin), Bamboo (Sou)
+        		  - Each numbered 1–9
+        		- Honor Tiles:
+        		  - Winds: East, South, West, North
+        		  - Dragons: Red, Green, White
 
-       			 [Insert your own house rules or additional explanations here.]
+        		STARTING THE GAME:
+        		- Each player begins with 13 tiles.
+        		- First player (East) draws one tile to start.
+        		- On your turn: Draw 1 tile → Discard 1 tile.
 
-       			 Note: This rulebook is editable by modifying the textArea.setText() content.
-       			 """);
-    			textArea.setEditable(false);
-    			textArea.setLineWrap(true);
-    			textArea.setWrapStyleWord(true);
+        		TURN ORDER:
+        		- Counterclockwise (right-hand player goes next).
 
-   			 JScrollPane scrollPane = new JScrollPane(textArea);
-    			JOptionPane.showMessageDialog(frame, scrollPane, "Game Rulebook", JOptionPane.INFORMATION_MESSAGE);
-		}
+        		MELDS (Sets of Tiles):
+        		- Chow (Chi): 3 consecutive tiles, same suit (only from player on your left)
+        		- Pong (Pon): 3 identical tiles (any discard)
+        		- Kong (Kan): 4 identical tiles (requires special declaration)
+        		  - Add a tile if concealed (Ankan) or convert a Pong to Kong (Shoukan)
+
+        		DECLARATIONS:
+        		- Riichi: Declared when you are one tile from winning (Tenpai) with a closed hand. Costs 1000 points.
+        		- Tsumo: Win by self-draw.
+        		- Ron: Win using another player’s discard.
+
+        		FURITEN RULE:
+        		- You cannot Ron (win off a discard) if you’ve previously ignored a winning discard.
+
+        		SCORING NOTES (Simplified):
+        		- Common Yaku (scoring hands):
+        		  - Riichi, Tsumo, Pinfu, Yakuhai (Dragon Pongs), Chii Toitsu (7 pairs)
+        		- Dora indicators give bonus points.
+
+        		SPECIAL RULES:
+        		- If the wall runs out: draw ends in a draw.
+        		- Multiple players can Ron on the same discard (optional: headbump rule).
+        		- Dead wall holds 14 tiles (including Dora).
+
+        		MISC:
+        		- Cannot declare Chi on another player’s discard unless they are on your left.
+        		- After a Kan, player draws from dead wall.
+
+        		[End of Rulebook]
+        		""");
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        JOptionPane.showMessageDialog(frame, scrollPane, "Game Rulebook", JOptionPane.INFORMATION_MESSAGE);
+    }
 
     public static void main(String[] args) {
         new Board();
