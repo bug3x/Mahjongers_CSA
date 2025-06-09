@@ -1,0 +1,35 @@
+// Source code is decompiled from a .class file using FernFlower decompiler.
+package src;
+
+public class DragonPiece extends Piece {
+   public DragonPiece(String dragon) {
+      String var10000;
+      label23: {
+         super();
+         this.type = "Dragon";
+         this.value = dragon;
+         switch (dragon) {
+            case "Red":
+               var10000 = "zhong.png";
+               break label23;
+            case "Green":
+               var10000 = "fa.png";
+               break label23;
+            case "White":
+               var10000 = "blank.png";
+               break label23;
+         }
+
+         var10000 = "blank.png";
+      }
+
+      String fileName = var10000;
+      this.setIcon(fileName);
+   }
+
+   public void operation() {
+   }
+
+   public void operation2() {
+   }
+}
