@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -40,6 +41,8 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 
 public class Board extends JPanel implements MouseListener, ActionListener {
     private JFrame frame;
@@ -68,6 +71,13 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     private JLabel[] turnLabels = new JLabel[4]; // One for each player position
     private Timer botCountdownTimer; // For bot turn countdown
     private int botCountdownSeconds; // For bot turn countdown
+
+    private JPanel[] meldDisplayPanels; // Array of panels to show melded tiles for all players
+    private static final int MELD_BUTTON_SIZE = 80;
+    private static final int MELD_DISPLAY_GAP = 20;
+    private static final double MELD_TILE_SCALE = 0.6; // Scale factor for meld tiles
+    private static final int MELD_TILE_GAP = 5; // Gap between tiles in a meld
+    private static final int MELD_GROUP_GAP = 15; // Gap between different melds
 
     public Board() {
         frame = new JFrame("Mahjong");
@@ -109,6 +119,28 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         this.add(turnLabels[1], BorderLayout.EAST);   // Mr. Biatchin (right)
         this.add(turnLabels[2], BorderLayout.NORTH);  // Just_Do_It_Later (top)
         this.add(turnLabels[3], BorderLayout.WEST);   // Mr. David (left)
+
+        // Initialize meld display panels for all players
+        meldDisplayPanels = new JPanel[4];
+        for (int i = 0; i < 4; i++) {
+            meldDisplayPanels[i] = new JPanel();
+            meldDisplayPanels[i].setOpaque(false);
+            meldDisplayPanels[i].setPreferredSize(new Dimension(800, 100));
+            
+            // Set layout based on player position
+            switch (i) {
+                case 0 -> meldDisplayPanels[i].setLayout(new FlowLayout(FlowLayout.LEFT, MELD_GROUP_GAP, 0));
+                case 1 -> meldDisplayPanels[i].setLayout(new BoxLayout(meldDisplayPanels[i], BoxLayout.Y_AXIS));
+                case 2 -> meldDisplayPanels[i].setLayout(new FlowLayout(FlowLayout.RIGHT, MELD_GROUP_GAP, 0));
+                case 3 -> meldDisplayPanels[i].setLayout(new BoxLayout(meldDisplayPanels[i], BoxLayout.Y_AXIS));
+            }
+        }
+        
+        // Add panels to appropriate positions
+        this.add(meldDisplayPanels[0], BorderLayout.SOUTH);  // Player 0 (bottom)
+        this.add(meldDisplayPanels[1], BorderLayout.EAST);   // Player 1 (right)
+        this.add(meldDisplayPanels[2], BorderLayout.NORTH);  // Player 2 (top)
+        this.add(meldDisplayPanels[3], BorderLayout.WEST);   // Player 3 (left)
     }
 
     // Helper to create a smaller icon for left/right discards
@@ -611,18 +643,59 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 	private void showRulebookDialog() {
   	  JTextArea textArea = new JTextArea(20, 40);
     		textArea.setText("""
-        		--- Mahjong Game Rulebook ---
+        		--- Mahjong Rulebook ---
 
-       			 1. Each player starts with 13 tiles.
-       			 2. Players take turns drawing and discarding tiles.
-       			 3. Goal: form four melds and a pair.
-       			 4. Melds: Chow (sequence), Pong (three of a kind), Kong (four of a kind).
-       			 5. Special declarations: Riichi, Tsumo, Ron.
+        		OBJECTIVE:
+        		Form a complete hand of 14 tiles, consisting of:
+        		- 4 melds (sets of 3 tiles: chow, pong, or kong)
+        		- 1 pair (2 identical tiles)
+        		You win by declaring Tsumo (self-draw) or Ron (opponent's discard).
 
-       			 [Insert your own house rules or additional explanations here.]
+        		TILE TYPES:
+        		- Suited Tiles: Characters (Man), Circles (Pin), Bamboo (Sou)
+        		  - Each numbered 1–9
+        		- Honor Tiles:
+        		  - Winds: East, South, West, North
+        		  - Dragons: Red, Green, White
 
-       			 Note: This rulebook is editable by modifying the textArea.setText() content.
-       			 """);
+        		STARTING THE GAME:
+        		- Each player begins with 13 tiles.
+        		- First player (East) draws one tile to start.
+        		- On your turn: Draw 1 tile → Discard 1 tile.
+
+        		TURN ORDER:
+        		- Counterclockwise (right-hand player goes next).
+
+        		MELDS (Sets of Tiles):
+        		- Chow (Chi): 3 consecutive tiles, same suit (only from player on your left)
+        		- Pong (Pon): 3 identical tiles (any discard)
+        		- Kong (Kan): 4 identical tiles (requires special declaration)
+        		  - Add a tile if concealed (Ankan) or convert a Pong to Kong (Shoukan)
+
+        		DECLARATIONS:
+        		- Riichi: Declared when you are one tile from winning (Tenpai) with a closed hand. Costs 1000 points.
+        		- Tsumo: Win by self-draw.
+        		- Ron: Win using another player’s discard.
+
+        		FURITEN RULE:
+        		- You cannot Ron (win off a discard) if you’ve previously ignored a winning discard.
+
+        		SCORING NOTES (Simplified):
+        		- Common Yaku (scoring hands):
+        		  - Riichi, Tsumo, Pinfu, Yakuhai (Dragon Pongs), Chii Toitsu (7 pairs)
+        		- Dora indicators give bonus points.
+
+        		SPECIAL RULES:
+        		- If the wall runs out: draw ends in a draw.
+        		- Multiple players can Ron on the same discard (optional: headbump rule).
+        		- Dead wall holds 14 tiles (including Dora).
+
+        		MISC:
+        		- Cannot declare Chi on another player’s discard unless they are on your left.
+        		- After a Kan, player draws from dead wall.
+
+        		[End of Rulebook]
+        		""");
     			textArea.setEditable(false);
     			textArea.setLineWrap(true);
     			textArea.setWrapStyleWord(true);
@@ -658,8 +731,8 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         };
         addToDiscard(piece, currentPlayer.getDiscards(), discardPanel);
 
-        // Check for melds for player 0 after every discard
-        checkMeldsAfterDiscard(piece);
+        // After any discard, check all other players for melds
+        afterDiscardCheckMelds(piece, currentPlayerIndex);
 
         // Draw a new tile
         if (!logic.drawWall.isEmpty()) {
@@ -686,7 +759,17 @@ public class Board extends JPanel implements MouseListener, ActionListener {
 
     // --- Helper to show meld buttons ---
     private void showMeldButtons(java.util.List<String> melds) {
-        meldPanel.removeAll();
+        if (melds.isEmpty()) return;
+        // Remove Riichi if not eligible
+        Player player = players.get(0);
+        if (melds.contains("riichi") && (player.getHand().size() != 13 || player.isInRiichi())) {
+            melds.remove("riichi");
+        }
+        JDialog meldDialog = new JDialog(frame, "Meld Options", true);
+        meldDialog.setUndecorated(true);
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         for (String meld : melds) {
             String imgFile = switch (meld) {
                 case "chow" -> "chi.png";
@@ -699,7 +782,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             };
             if (imgFile != null) {
                 ImageIcon icon = new ImageIcon("imgs/" + imgFile);
-                Image img = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+                Image img = icon.getImage().getScaledInstance(MELD_BUTTON_SIZE, MELD_BUTTON_SIZE, Image.SCALE_SMOOTH);
                 JButton btn = new JButton(new ImageIcon(img));
                 btn.setFocusPainted(false);
                 btn.setContentAreaFilled(false);
@@ -707,74 +790,255 @@ public class Board extends JPanel implements MouseListener, ActionListener {
                 btn.setOpaque(false);
                 btn.setToolTipText(meld.substring(0,1).toUpperCase() + meld.substring(1));
                 btn.addActionListener(e -> {
-                    meldPanel.setVisible(false);
-                    if (meldTimer != null) meldTimer.stop();
+                    meldDialog.dispose();
                     performMeld(meld);
                 });
-                meldPanel.add(btn);
+                panel.add(btn);
             }
         }
-        meldPanel.setVisible(true);
-        meldPanel.revalidate();
-        meldPanel.repaint();
-        // Start 5s timer for auto-pass
-        if (meldTimer != null) meldTimer.stop();
-        meldTimer = new Timer(5000, e -> {
-            meldPanel.setVisible(false);
-        });
-        meldTimer.setRepeats(false);
-        meldTimer.start();
+        meldDialog.getContentPane().add(panel);
+        meldDialog.pack();
+        meldDialog.setLocationRelativeTo(frame);
+        Timer autoPassTimer = new Timer(5000, e -> meldDialog.dispose());
+        autoPassTimer.setRepeats(false);
+        autoPassTimer.start();
+        meldDialog.setVisible(true);
     }
 
-    // --- Helper to perform meld action ---
     private void performMeld(String meld) {
-        // TODO: Implement meld logic (call GameLogic methods, update hand/discards, etc.)
-        // For now, just show GIF overlay for riichi, tsumo, ron
-        if (meld.equals("riichi")) {
-            showGifOverlay("imgs/mahjong-all-day-riichi.gif");
-        } else if (meld.equals("tsumo")) {
-            showGifOverlay("imgs/tsumo-mahjong.gif");
-        } else if (meld.equals("ron")) {
-            showGifOverlay("imgs/yakuza-ron.gif");
+        Player player = players.get(0); // Human player
+        Piece lastDiscard = logic.getDiscards().isEmpty() ? null : 
+            logic.getDiscards().get(logic.getDiscards().size() - 1);
+        if (lastDiscard == null) return;
+
+        ArrayList<Piece> meldPieces = new ArrayList<>();
+        boolean didMeld = false;
+        switch (meld) {
+            case "chow" -> {
+                if (Meld.canChow(player, lastDiscard)) {
+                    ArrayList<Piece> sequence = findChowSequence(player, lastDiscard);
+                    if (sequence != null) {
+                        // Find the two tiles in hand that, together with lastDiscard, form the chow
+                        ArrayList<Piece> chowTiles = new ArrayList<>();
+                        for (Piece p : sequence) {
+                            if (!(p.getType().equals(lastDiscard.getType()) && p.getValue().equals(lastDiscard.getValue()))) {
+                                chowTiles.add(p);
+                            }
+                        }
+                        // Remove only those two tiles from hand
+                        player.getHand().removeAll(chowTiles);
+                        meldPieces.addAll(chowTiles);
+                        meldPieces.add(lastDiscard);
+                        logic.getDiscards().remove(lastDiscard);
+                        meldPieces.sort((a, b) -> Integer.compare(Integer.parseInt(a.getValue()), Integer.parseInt(b.getValue())));
+                        displayMeld(0, "Chow", meldPieces);
+                        showGifOverlay("imgs/mahjong-chi.gif");
+                        didMeld = true;
+                    }
+                }
+            }
+            case "pong" -> {
+                if (Meld.canPong(player, lastDiscard)) {
+                    ArrayList<Piece> matches = findMatchingTiles(player, lastDiscard);
+                    if (matches.size() == 2) {
+                        player.getHand().removeAll(matches);
+                        meldPieces.addAll(matches);
+                        meldPieces.add(lastDiscard);
+                        logic.getDiscards().remove(lastDiscard);
+                        displayMeld(0, "Pong", meldPieces);
+                        showGifOverlay("imgs/mahjong-pon.gif");
+                        didMeld = true;
+                    }
+                }
+            }
+            case "kong" -> {
+                if (Meld.canKong(player, lastDiscard)) {
+                    ArrayList<Piece> matches = findMatchingTiles(player, lastDiscard);
+                    if (matches.size() == 3) {
+                        player.getHand().removeAll(matches);
+                        meldPieces.addAll(matches);
+                        meldPieces.add(lastDiscard);
+                        logic.getDiscards().remove(lastDiscard);
+                        displayMeld(0, "Kong", meldPieces);
+                        showGifOverlay("imgs/mahjong-kan.gif");
+                        didMeld = true;
+                    }
+                }
+            }
+            case "riichi" -> {
+                // Only allow Riichi if player has 13 tiles and is not already in Riichi
+                if (player.getHand().size() == 13 && !player.isInRiichi()) {
+                    showGifOverlay("imgs/mahjong-all-day-riichi.gif");
+                    player.declareRiichi();
+                }
+            }
+            case "tsumo" -> {
+                showGifOverlay("imgs/tsumo-mahjong.gif");
+            }
+            case "ron" -> {
+                showGifOverlay("imgs/yakuza-ron.gif");
+            }
         }
-        // Hide meld panel after action
-        meldPanel.setVisible(false);
+        // If a meld was performed, prompt for discard and update display
+        if (didMeld) {
+            for (Tile tile : bottomHandTiles) {
+                tile.setEnabled(true);
+            }
+            updateDisplay();
+        }
     }
 
-    // --- Helper to show GIF overlay ---
+    private ArrayList<Piece> findChowSequence(Player player, Piece lastDiscard) {
+        if (!(lastDiscard instanceof NumberPiece || lastDiscard instanceof CirclePiece || lastDiscard instanceof BambooPiece)) {
+            return null;
+        }
+
+        int discardValue = Integer.parseInt(lastDiscard.getValue());
+        String discardType = lastDiscard.getType();
+        ArrayList<Piece> hand = player.getHand();
+        
+        // Try all possible sequences
+        for (int start = discardValue - 2; start <= discardValue; start++) {
+            if (start < 1 || start > 7) continue;
+            
+            ArrayList<Piece> sequence = new ArrayList<>();
+            boolean validSequence = true;
+            
+            // Check if we have all tiles in sequence
+            for (int i = 0; i < 3; i++) {
+                int value = start + i;
+                Piece tile = findTileInHand(hand, discardType, String.valueOf(value));
+                if (tile == null) {
+                    validSequence = false;
+                    break;
+                }
+                sequence.add(tile);
+            }
+            
+            if (validSequence) {
+                return sequence;
+            }
+        }
+        
+        return null;
+    }
+
+    private ArrayList<Piece> findMatchingTiles(Player player, Piece target) {
+        ArrayList<Piece> matches = new ArrayList<>();
+        for (Piece p : player.getHand()) {
+            if (p.getType().equals(target.getType()) && p.getValue().equals(target.getValue())) {
+                matches.add(p);
+            }
+        }
+        return matches;
+    }
+
+    private Piece findTileInHand(ArrayList<Piece> hand, String type, String value) {
+        for (Piece p : hand) {
+            if (p.getType().equals(type) && p.getValue().equals(value)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private void displayMeld(int playerIndex, String meldType, ArrayList<Piece> pieces) {
+        JPanel meldGroup = new JPanel();
+        meldGroup.setOpaque(false);
+        
+        // Set layout based on player position
+        switch (playerIndex) {
+            case 0, 2 -> meldGroup.setLayout(new FlowLayout(FlowLayout.LEFT, MELD_TILE_GAP, 0));
+            case 1, 3 -> meldGroup.setLayout(new BoxLayout(meldGroup, BoxLayout.Y_AXIS));
+        }
+        
+        // Add meld type label
+        JLabel typeLabel = new JLabel(meldType);
+        typeLabel.setForeground(Color.WHITE);
+        meldGroup.add(typeLabel);
+        
+        // Add melded tiles with scaled size
+        for (Piece piece : pieces) {
+            Icon originalIcon = piece.getIcon();
+            if (originalIcon instanceof ImageIcon) {
+                ImageIcon imageIcon = (ImageIcon) originalIcon;
+                Image scaledImage = imageIcon.getImage().getScaledInstance(
+                    (int)(imageIcon.getIconWidth() * MELD_TILE_SCALE),
+                    (int)(imageIcon.getIconHeight() * MELD_TILE_SCALE),
+                    Image.SCALE_SMOOTH
+                );
+                JLabel tileLabel = new JLabel(new ImageIcon(scaledImage));
+                meldGroup.add(tileLabel);
+            }
+        }
+        
+        meldDisplayPanels[playerIndex].add(meldGroup);
+        meldDisplayPanels[playerIndex].revalidate();
+        meldDisplayPanels[playerIndex].repaint();
+    }
+
     private void showGifOverlay(String gifPath) {
-        if (gifOverlay != null) gifOverlay.dispose();
-        gifOverlay = new JDialog(frame, true);
+        if (gifOverlay != null) {
+            gifOverlay.dispose();
+        }
+        
+        gifOverlay = new JDialog(frame, false);
         gifOverlay.setUndecorated(true);
+        gifOverlay.setBackground(new Color(0, 0, 0, 0));
+        
+        // Make the overlay cover most of the screen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int)(screenSize.width * 0.8);
+        int height = (int)(screenSize.height * 0.8);
+        gifOverlay.setSize(width, height);
+        
         JLabel gifLabel = new JLabel(new ImageIcon(gifPath));
-        gifOverlay.getContentPane().add(gifLabel);
-        gifOverlay.pack();
+        gifLabel.setHorizontalAlignment(JLabel.CENTER);
+        gifLabel.setVerticalAlignment(JLabel.CENTER);
+        gifOverlay.add(gifLabel);
+        
         gifOverlay.setLocationRelativeTo(frame);
-        // Timer to close overlay after GIF duration (3s default)
-        Timer closeTimer = new Timer(3000, e -> gifOverlay.dispose());
-        closeTimer.setRepeats(false);
-        closeTimer.start();
+        
+        Timer timer = new Timer(3000, e -> gifOverlay.dispose());
+        timer.setRepeats(false);
+        timer.start();
+        
         gifOverlay.setVisible(true);
     }
 
-    // --- After every discard, check for melds for player 0 ---
-    private void checkMeldsAfterDiscard(Piece lastDiscard) {
-        java.util.List<String> melds = new java.util.ArrayList<>();
-        // Only for player 0 (bottom)
-        Player player = players.get(0);
-        int playerIndex = 0;
-        // Find who discarded last
-        int lastDiscarder = (currentPlayerIndex + 3) % 4;
-        // Only allow Chow if last discard was from player 3 (right of player 0)
-        if (Meld.canChow(player, lastDiscard) && lastDiscarder == 3) melds.add("chow");
-        if (Meld.canPong(player, lastDiscard)) melds.add("pong");
-        if (Meld.canKong(player, lastDiscard)) melds.add("kong");
-        if (Meld.canRiichi(player)) melds.add("riichi");
-        // TODO: Add tsumo/ron logic if needed
-        if (!melds.isEmpty()) {
-            showMeldButtons(melds);
-        } else {
-            meldPanel.setVisible(false);
+    // Update afterDiscardCheckMelds to add debug output and ensure meld pop-up for player 0
+    public void afterDiscardCheckMelds(Piece lastDiscard, int discarderIndex) {
+        // Check for melds for all players except the discarder
+        for (int i = 0; i < 4; i++) {
+            if (i == discarderIndex) continue;
+            Player player = players.get(i);
+            boolean canPong = Meld.canPong(player, lastDiscard);
+            boolean canKong = Meld.canKong(player, lastDiscard);
+            boolean canChow = false;
+            // Only the player to the left of the discarder can Chow
+            int leftOfDiscarder = (discarderIndex + 1) % 4;
+            if (i == leftOfDiscarder) {
+                canChow = Meld.canChow(player, lastDiscard);
+            }
+            if (i == 0) {
+                System.out.println("[DEBUG] Checking melds for player 0: canChow=" + canChow + ", canPong=" + canPong + ", canKong=" + canKong);
+            }
+            if (i == 0 && (canPong || canKong || canChow)) {
+                // Human player: show meld pop-up for Pong/Kong/Chow
+                java.util.List<String> melds = new java.util.ArrayList<>();
+                if (canChow) melds.add("chow");
+                if (canPong) melds.add("pong");
+                if (canKong) melds.add("kong");
+                if (Meld.canRiichi(player)) melds.add("riichi");
+                System.out.println("[DEBUG] Showing meld pop-up for player 0: " + melds);
+                showMeldButtons(melds);
+                return; // Only show to human, don't let bots auto-meld first
+            } else if (i != 0 && (canPong || canKong || canChow)) {
+                // Bot: auto-meld
+                if (tryBotMeld(player, i, lastDiscard)) {
+                    return; // If bot melds, stop further checks
+                }
+            }
         }
     }
 
@@ -784,6 +1048,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         processNextBotTurn(currentPlayerIndex);
     }
 
+    // Reduce bot move timer from 5 seconds to 3 seconds
     private void processNextBotTurn(int botIndex) {
         if (botIndex == 0) {
             isBotTurn = false;
@@ -792,9 +1057,9 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         }
 
         Player bot = players.get(botIndex);
-        turnLabels[botIndex].setText(bot.getName() + "'s Turn (5s)");
+        turnLabels[botIndex].setText(bot.getName() + "'s Turn (3s)");
         for (int i = 0; i < 4; i++) turnLabels[i].setVisible(i == botIndex);
-        botCountdownSeconds = 5;
+        botCountdownSeconds = 3;
 
         if (botCountdownTimer != null) botCountdownTimer.stop();
         botCountdownTimer = new Timer(1000, new ActionListener() {
@@ -818,6 +1083,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         if (bot.getHand().size() < 14 && !logic.drawWall.isEmpty()) {
             Piece drawn = logic.drawWall.pop();
             bot.addToHand(drawn);
+            System.out.println(bot.getName() + " drew a tile");
         }
 
         // Check for win (Tsumo)
@@ -837,7 +1103,7 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             }
         }
 
-        // Discard a tile
+        // Bot must discard a tile
         Piece discard = chooseBotDiscard(bot);
         if (discard != null) {
             bot.getHand().remove(discard);
@@ -848,8 +1114,15 @@ public class Board extends JPanel implements MouseListener, ActionListener {
                 case 3 -> leftDiscards;
                 default -> null;
             };
-            if (discardPanel != null) addToDiscard(discard, bot.getDiscards(), discardPanel);
+            if (discardPanel != null) {
+                addToDiscard(discard, bot.getDiscards(), discardPanel);
+                System.out.println(bot.getName() + " discarded " + discard.getType() + " " + discard.getValue());
+            }
             checkRonOnDiscard(discard, botIndex);
+            // After any discard, check all other players for melds
+            afterDiscardCheckMelds(discard, botIndex);
+        } else {
+            System.out.println("Error: " + bot.getName() + " has no tiles to discard!");
         }
 
         // Move to next player
@@ -857,23 +1130,72 @@ public class Board extends JPanel implements MouseListener, ActionListener {
         processNextBotTurn(currentPlayerIndex);
     }
 
-    // --- Bot discard logic: keep pairs, discard singletons ---
     private Piece chooseBotDiscard(Player bot) {
+        ArrayList<Piece> hand = bot.getHand();
+        if (hand.isEmpty()) return null;
+
+        // Count occurrences of each tile
         java.util.Map<String, Integer> tileCounts = new java.util.HashMap<>();
-        for (Piece p : bot.getHand()) {
+        for (Piece p : hand) {
             String key = p.getType() + ":" + p.getValue();
             tileCounts.put(key, tileCounts.getOrDefault(key, 0) + 1);
         }
-        // Prefer to discard singletons
-        for (Piece p : bot.getHand()) {
+
+        // Strategy: Keep pairs and potential sequences, discard isolated tiles
+        for (Piece p : hand) {
             String key = p.getType() + ":" + p.getValue();
-            if (tileCounts.get(key) == 1) return p;
+            int count = tileCounts.get(key);
+
+            // Keep pairs (2 tiles)
+            if (count == 2) continue;
+
+            // Keep potential sequences for number tiles
+            if (p instanceof NumberPiece || p instanceof CirclePiece || p instanceof BambooPiece) {
+                int value = Integer.parseInt(p.getValue());
+                String type = p.getType();
+                
+                // Check for potential sequences
+                boolean hasSequence = false;
+                if (value >= 2 && value <= 8) {
+                    // Check for middle of sequence
+                    String prevKey = type + ":" + (value - 1);
+                    String nextKey = type + ":" + (value + 1);
+                    if (tileCounts.getOrDefault(prevKey, 0) > 0 && tileCounts.getOrDefault(nextKey, 0) > 0) {
+                        hasSequence = true;
+                    }
+                }
+                if (value >= 3) {
+                    // Check for end of sequence
+                    String prevKey1 = type + ":" + (value - 2);
+                    String prevKey2 = type + ":" + (value - 1);
+                    if (tileCounts.getOrDefault(prevKey1, 0) > 0 && tileCounts.getOrDefault(prevKey2, 0) > 0) {
+                        hasSequence = true;
+                    }
+                }
+                if (value <= 7) {
+                    // Check for start of sequence
+                    String nextKey1 = type + ":" + (value + 1);
+                    String nextKey2 = type + ":" + (value + 2);
+                    if (tileCounts.getOrDefault(nextKey1, 0) > 0 && tileCounts.getOrDefault(nextKey2, 0) > 0) {
+                        hasSequence = true;
+                    }
+                }
+                
+                if (!hasSequence) {
+                    return p; // Discard isolated tile
+                }
+            } else {
+                // For honor tiles (winds/dragons), keep pairs
+                if (count == 1) {
+                    return p; // Discard isolated honor tile
+                }
+            }
         }
-        // Otherwise, discard any tile
-        return bot.getHand().isEmpty() ? null : bot.getHand().get(0);
+
+        // If no good discard found, discard the first tile
+        return hand.get(0);
     }
 
-    // --- Bot meld logic ---
     private boolean tryBotMeld(Player bot, int botIndex, Piece lastDiscard) {
         // Try Ron (win on discard)
         if (checkBotRon(bot, botIndex, lastDiscard)) {
@@ -882,28 +1204,112 @@ public class Board extends JPanel implements MouseListener, ActionListener {
             processBotTurns();
             return true;
         }
-        // Try Kong
+
+        // Try Kong (highest priority)
         if (Meld.canKong(bot, lastDiscard)) {
-            // TODO: Implement Kong meld logic for bot
-            currentPlayerIndex = botIndex;
-            processBotTurns();
-            return true;
+            ArrayList<Piece> matches = findMatchingTiles(bot, lastDiscard);
+            if (matches.size() == 3) {
+                bot.getHand().removeAll(matches);
+                ArrayList<Piece> meldPieces = new ArrayList<>(matches);
+                meldPieces.add(lastDiscard);
+                logic.getDiscards().remove(lastDiscard);
+                System.out.println(bot.getName() + " calls Kong!");
+                showGifOverlay("imgs/mahjong-kan.gif");
+                displayMeld(botIndex, "Kong", meldPieces);
+                // Bot must discard after meld
+                Piece discard = chooseBotDiscard(bot);
+                if (discard != null) {
+                    bot.getHand().remove(discard);
+                    logic.getDiscards().add(discard);
+                    JPanel discardPanel = switch (botIndex) {
+                        case 1 -> rightDiscards;
+                        case 2 -> topDiscards;
+                        case 3 -> leftDiscards;
+                        default -> null;
+                    };
+                    if (discardPanel != null) {
+                        addToDiscard(discard, bot.getDiscards(), discardPanel);
+                        System.out.println(bot.getName() + " discarded " + discard.getType() + " " + discard.getValue());
+                    }
+                    checkRonOnDiscard(discard, botIndex);
+                }
+                currentPlayerIndex = botIndex;
+                processBotTurns();
+                return true;
+            }
         }
+
         // Try Pong
         if (Meld.canPong(bot, lastDiscard)) {
-            // TODO: Implement Pong meld logic for bot
-            currentPlayerIndex = botIndex;
-            processBotTurns();
-            return true;
+            ArrayList<Piece> matches = findMatchingTiles(bot, lastDiscard);
+            if (matches.size() == 2) {
+                bot.getHand().removeAll(matches);
+                ArrayList<Piece> meldPieces = new ArrayList<>(matches);
+                meldPieces.add(lastDiscard);
+                logic.getDiscards().remove(lastDiscard);
+                System.out.println(bot.getName() + " calls Pong!");
+                showGifOverlay("imgs/mahjong-pon.gif");
+                displayMeld(botIndex, "Pong", meldPieces);
+                // Bot must discard after meld
+                Piece discard = chooseBotDiscard(bot);
+                if (discard != null) {
+                    bot.getHand().remove(discard);
+                    logic.getDiscards().add(discard);
+                    JPanel discardPanel = switch (botIndex) {
+                        case 1 -> rightDiscards;
+                        case 2 -> topDiscards;
+                        case 3 -> leftDiscards;
+                        default -> null;
+                    };
+                    if (discardPanel != null) {
+                        addToDiscard(discard, bot.getDiscards(), discardPanel);
+                        System.out.println(bot.getName() + " discarded " + discard.getType() + " " + discard.getValue());
+                    }
+                    checkRonOnDiscard(discard, botIndex);
+                }
+                currentPlayerIndex = botIndex;
+                processBotTurns();
+                return true;
+            }
         }
+
         // Try Chow (only for player to the left of discarder)
         int discarder = (botIndex + 3) % 4;
         if (Meld.canChow(bot, lastDiscard) && discarder == ((botIndex + 3) % 4)) {
-            // TODO: Implement Chow meld logic for bot
-            currentPlayerIndex = botIndex;
-            processBotTurns();
-            return true;
+            ArrayList<Piece> sequence = findChowSequence(bot, lastDiscard);
+            if (sequence != null) {
+                bot.getHand().removeAll(sequence);
+                sequence.removeIf(p -> p.getType().equals(lastDiscard.getType()) && p.getValue().equals(lastDiscard.getValue()));
+                ArrayList<Piece> meldPieces = new ArrayList<>(sequence);
+                meldPieces.add(lastDiscard);
+                logic.getDiscards().remove(lastDiscard);
+                meldPieces.sort((a, b) -> Integer.compare(Integer.parseInt(a.getValue()), Integer.parseInt(b.getValue())));
+                System.out.println(bot.getName() + " calls Chow!");
+                showGifOverlay("imgs/mahjong-chi.gif");
+                displayMeld(botIndex, "Chow", meldPieces);
+                // Bot must discard after meld
+                Piece discard = chooseBotDiscard(bot);
+                if (discard != null) {
+                    bot.getHand().remove(discard);
+                    logic.getDiscards().add(discard);
+                    JPanel discardPanel = switch (botIndex) {
+                        case 1 -> rightDiscards;
+                        case 2 -> topDiscards;
+                        case 3 -> leftDiscards;
+                        default -> null;
+                    };
+                    if (discardPanel != null) {
+                        addToDiscard(discard, bot.getDiscards(), discardPanel);
+                        System.out.println(bot.getName() + " discarded " + discard.getType() + " " + discard.getValue());
+                    }
+                    checkRonOnDiscard(discard, botIndex);
+                }
+                currentPlayerIndex = botIndex;
+                processBotTurns();
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -930,16 +1336,33 @@ public class Board extends JPanel implements MouseListener, ActionListener {
     }
 
     private void updateTurnLabel() {
-        // Hide all labels first
         for (int i = 0; i < 4; i++) {
             turnLabels[i].setVisible(false);
         }
-
-        // Show only the current player's label
         String name = players.get(currentPlayerIndex).getName();
-        String labelText = (currentPlayerIndex == 0) ? "Your Turn" : name + "'s Turn";
-        turnLabels[currentPlayerIndex].setText(labelText);
-        turnLabels[currentPlayerIndex].setVisible(true);
+        if (currentPlayerIndex == 0) {
+            turnLabels[0].setText("Your Turn (5s)");
+            turnLabels[0].setVisible(true);
+            botCountdownSeconds = 5;
+            if (botCountdownTimer != null) botCountdownTimer.stop();
+            botCountdownTimer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    botCountdownSeconds--;
+                    if (botCountdownSeconds > 0) {
+                        turnLabels[0].setText("Your Turn (" + botCountdownSeconds + "s)");
+                    } else {
+                        botCountdownTimer.stop();
+                        // Optionally auto-pass or auto-discard if time runs out
+                    }
+                }
+            });
+            botCountdownTimer.setRepeats(true);
+            botCountdownTimer.start();
+        } else {
+            turnLabels[currentPlayerIndex].setText(name + "'s Turn (5s)");
+            turnLabels[currentPlayerIndex].setVisible(true);
+        }
     }
 }
 
